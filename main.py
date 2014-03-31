@@ -46,29 +46,16 @@ def change_state():
 		return "New Status"
 
 def set_current_state(new_state):
-        client = memcache.Client()
-        current_state = client.gets(fridge_door_state_cache_key)
-
-        if current_state is None:
-                 memcache.set(fridge_door_state_cache_key, 3)
-        while True: # Retry loop
-                if client.cas(fridge_door_state_cache_key, new_state):
-                    break
-
-	updated_door_entity = FridgeDoorState(key_name="current", door_state = new_state)
+	updated_door_entity = FridgeDoorState.get_by_id('current')
+        updated_door_entity.door_state = new_state
 	updated_door_entity.put()
-	historical_door_entity = FridgeDoorState(key_name=None, door_state = new_state)
-        historical_door_entity.put()
-	
-	return "done"
 
 def get_last_opened_time():
-        if (last_opened_time is None):
-                current_state = ndb.get_by_id(current_door_state_key)
-                if (current_state is None):
-                        last_opened_time = None
-                else:
-                        last_opened_time = current_state.state_time
+        current_state = FridgeDoorState.get_by_id('current')
+        if (current_state is None):
+                last_opened_time = None
+        else:
+                last_opened_time = current_state.state_time
 
         return last_opened_time
                 
@@ -80,18 +67,10 @@ def request_channel():
 
 @bottle.route('/fridge_state')
 def get_current_state():
-        #Try to get it from memcached first
-        state_value = memcache.get(fridge_door_state_cache_key)
-        if (state_value is None):
-                current_door_state_key = db.Key.from_path('FridgeDoorState', 'current')
-                current_state = db.get(current_door_state_key)
-                if (current_state is None):
-                        state_value = 3
-                else:
-                        state_value = current_state.door_state
-
-                memcache.add(fridge_door_state_cache_key, state_value, 3600)
-
+        state_value = 3
+        current_state = FridgeDoorState.get_by_id('current')
+        if (current_state is not None):
+                state_value = current_state.door_state
 
         return str(state_value)
 
