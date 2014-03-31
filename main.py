@@ -63,7 +63,6 @@ def set_current_state(new_state):
 	return "done"
 
 def get_last_opened_time():
-        last_opened_time = memcache.get(fridge_last_opened_cache_key)
         if (last_opened_time is None):
                 current_state = ndb.get_by_id(current_door_state_key)
                 if (current_state is None):
