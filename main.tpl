@@ -46,14 +46,20 @@
 			function updateLastOpenedTime(lastOpenedDate)
 			{
 				var hours = lastOpenedDate.getHours();
-				if (hours > 12)
+				if (hours == 0)
+				{
+					hours = 12
+				}
+				else if (hours > 12)
 				{
 					hours -= 12;
 				}
+				
 				if ((hours + "").length == 1)
 				{
 					hours = "0" + hours;
 				}
+				
 				var minutes = lastOpenedDate.getMinutes() + "";
 				if (minutes.length == 1)
 				{
