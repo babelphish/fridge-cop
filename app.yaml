@@ -1,0 +1,27 @@
+application: fridge-cop
+version: 1
+runtime: python27
+api_version: 1
+threadsafe: yes
+
+handlers:
+
+- url: /css
+  static_dir: css
+
+- url: /images
+  static_dir: images
+  
+- url: /js
+  static_dir: js
+  
+- url: /fonts
+  static_dir: fonts  
+ 
+- url: /favicon\.ico
+  static_files: favicon.ico
+  upload: favicon\.ico
+
+- url: .*
+  script: main.bottle
+
