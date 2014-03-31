@@ -45,8 +45,12 @@
 
 			function updateLastOpenedTime(lastOpenedDate)
 			{
-				var hours = lastOpenedDate.getHours() + "";
-				if (hours.length == 1)
+				var hours = lastOpenedDate.getHours();
+				if (hours > 12)
+				{
+					hours -= 12;
+				}
+				if ((hours + "").length == 1)
 				{
 					hours = "0" + hours;
 				}
@@ -56,7 +60,7 @@
 					minutes = "0" + minutes;
 				}
 				
-				$("#lastOpenedText").text(hours + ":" + minutes);
+				$("#lastOpenedText").text(hours + ":" + minutes).attr("title", lastOpenedDate.toString());
 			}
 			
 			var updateInProgress = false;
