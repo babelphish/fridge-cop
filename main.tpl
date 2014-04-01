@@ -4,6 +4,7 @@
 		<script type="text/javascript" src="/_ah/channel/jsapi"></script>
 		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/json2/20130526/json2.min.js"></script>
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+		<script src="/js/moment.min.js"></script>
 		<link rel="stylesheet" type="text/css" href="./css/main.css"></link>
 	</head>
 
@@ -16,7 +17,7 @@
 
 			var fridgeStates = ["", "fridgeStateOpen", "fridgeStateClosed", "fridgeStateUnknown", "fridgeStateTransition"]
 			var currentState = "{{ fridge_state }}";
-			var lastOpenedDate = new Date('{{ last_opened_time }} UTC')
+			var lastOpenedDate = moment('{{ last_opened_time }}', 'YYYY-MM-DD HH:mm:ss.SSS Z')
 
 			function updateFridgeState(stateNumber)
 			{
@@ -31,7 +32,7 @@
 					currentState = newState;
 					$("#fridgeStateContainer").removeClass().addClass(newState);
 					$("#lastOpenedTime").removeClass().addClass("digitalFont").addClass(newState);
-					updateLastOpenedTime(new Date())
+					updateLastOpenedTime(moment())
 				}
 			}
 		 
@@ -39,34 +40,19 @@
 			
 			$(function()
 			{
+				preload([
+					'/images/fridge_closed.png',
+					'/images/fridge_open.png'
+				]);
+
 				updateLastOpenedTime(lastOpenedDate);
 				timer = setInterval(updateFridgeStatus, 1000);
 			})
 
 			function updateLastOpenedTime(lastOpenedDate)
 			{
-				var hours = lastOpenedDate.getHours();
-				if (hours == 0)
-				{
-					hours = 12
-				}
-				else if (hours > 12)
-				{
-					hours -= 12;
-				}
 				
-				if ((hours + "").length == 1)
-				{
-					hours = "0" + hours;
-				}
-				
-				var minutes = lastOpenedDate.getMinutes() + "";
-				if (minutes.length == 1)
-				{
-					minutes = "0" + minutes;
-				}
-				
-				$("#lastOpenedText").text(hours + ":" + minutes).attr("title", lastOpenedDate.toString());
+				$("#lastOpenedText").text(lastOpenedDate.format("hh:mm")).attr("title", lastOpenedDate.toString());
 			}
 			
 			var updateInProgress = false;
@@ -83,7 +69,13 @@
 					})
 				}
 			}
-		 
+			
+			function preload(arrayOfImages) {
+				$(arrayOfImages).each(function(){
+					$('<img/>')[0].src = this;
+				});
+			}
+			
 			/*
 			socket = channel.open();
 			socket.onopen = function() { alert('open') };
