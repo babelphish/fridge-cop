@@ -52,18 +52,47 @@ table {
 	margin-top: -125px;		
 }
 
-div.fridgeStateOpen
+#fridgeStateContainer.fridgeStateOpen
 {
 	background: url("../images/fridge_open.png") no-repeat;
 	background-size: contain;
 	background-position:center;
 }
 
-div.fridgeStateClosed
+#fridgeStateContainer.fridgeStateClosed
 {
 	background: url("../images/fridge_closed.png") no-repeat;
 	background-size: contain;
 	background-position:center;
+}
+
+#pollingSpeed
+{
+	position: relative;
+	width: 40px;
+	height: 40px;
+	margin-left: auto;
+	margin-right: auto;
+	background-size: cover;
+	background-position: center;
+	left: 32px;
+	top: 91px;
+	cursor: pointer;
+}
+
+#pollingSpeed.fridgeStateOpen
+{
+	display: none;
+}
+
+.slowPolling
+{
+	background: url("../images/snail.png") no-repeat;
+}
+
+.fastPolling
+{
+	background: url("../images/rabbit.png") no-repeat;
 }
 
 @font-face

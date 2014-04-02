@@ -11,6 +11,7 @@
 	<body>
 		<div id="fridgeStateContainer" class="{{fridge_state}}">
 			<div id="lastOpenedTime" class="digitalFont {{fridge_state}}"><span id="lastOpenedText"></span></div>
+			<div id="pollingSpeed" class="slowPolling {{fridge_state}}"></div>
 		</div>
 		
 		 <script>
@@ -42,7 +43,9 @@
 			{
 				preload([
 					'/images/fridge_closed.png',
-					'/images/fridge_open.png'
+					'/images/fridge_open.png',
+					'/images/rabbit.png',
+					'/images/snail.png'
 				]);
 
 				updateLastOpenedTime(lastOpenedDate);
@@ -51,7 +54,6 @@
 
 			function updateLastOpenedTime(lastOpenedDate)
 			{
-				
 				$("#lastOpenedText").text(lastOpenedDate.format("hh:mm")).attr("title", lastOpenedDate.toString());
 			}
 			
