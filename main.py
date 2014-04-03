@@ -2,10 +2,11 @@ from google.appengine.api import channel, memcache
 from bottle import Bottle, SimpleTemplate, static_file, request
 from fridge_model import FridgeDoorState
 from google.appengine.ext import ndb
-from google.appengine.api import channel
+from google.appengine.api import channel, users
 import logging
 import datetime
 import json
+
 
 # Run the Bottle wsgi application. We don't need to call run() since our
 # application is embedded within an App Engine WSGI application server.
@@ -31,8 +32,22 @@ def home():
         last_opened_time = get_last_opened_time()
         if (last_opened_time is None):
                 last_opened_time = ""
+
+
+        url = users.create_login_url("/")
+        logged_in = False
+        polling_state = "slowPolling"
+        user = users.get_current_user()
+        if user:
+                url = users.create_login_url("/")
+                logged_in = True
+                polling_state = "fastPolling"
 	
-	return home_template.render(fridge_state = fridgeCSSClass, last_opened_time = str(last_opened_time))
+	return home_template.render(fridge_state = fridgeCSSClass,
+                                    last_opened_time = str(last_opened_time),
+                                    polling_state = polling_state,
+                                    logged_in = logged_in,
+                                    user_url = url)
 
 @bottle.route('/change_state')
 def change_state():

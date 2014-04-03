@@ -11,7 +11,7 @@
 	<body>
 		<div id="fridgeStateContainer" class="{{fridge_state}}">
 			<div id="lastOpenedTime" class="digitalFont {{fridge_state}}"><span id="lastOpenedText"></span></div>
-			<div id="pollingSpeed" class="slowPolling {{fridge_state}}"></div>
+			<div id="pollingSpeed" class="{{polling_state}} {{fridge_state}}"></div>
 		</div>
 		
 		 <script>
@@ -19,7 +19,8 @@
 			var fridgeStates = ["", "fridgeStateOpen", "fridgeStateClosed", "fridgeStateUnknown", "fridgeStateTransition"]
 			var currentState = "{{ fridge_state }}";
 			var lastOpenedDate = moment('{{ last_opened_time }}', 'YYYY-MM-DD HH:mm:ss.SSS Z')
-
+			var userURL = '{{ user_url }}' 
+			
 			function updateFridgeState(stateNumber)
 			{
 				newState = "";
@@ -30,9 +31,9 @@
 				
 				if (newState != currentState)
 				{
+					$("#fridgeStateContainer, #pollingSpeed, #lastOpenedTime").removeClass(currentState).addClass(newState);
 					currentState = newState;
-					$("#fridgeStateContainer").removeClass().addClass(newState);
-					$("#lastOpenedTime").removeClass().addClass("digitalFont").addClass(newState);
+					
 					updateLastOpenedTime(moment())
 				}
 			}
@@ -41,6 +42,11 @@
 			
 			$(function()
 			{
+				$("#pollingSpeed").on("click", function()
+				{
+					window.location = userURL;
+				})
+			
 				preload([
 					'/images/fridge_closed.png',
 					'/images/fridge_open.png',
