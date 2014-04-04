@@ -38,16 +38,19 @@ def home():
         logged_in = False
         polling_state = "slowPolling"
         user = users.get_current_user()
+        user_name = ""
         if user:
-                url = users.create_login_url("/")
+                url = users.create_logout_url("/")
                 logged_in = True
                 polling_state = "fastPolling"
+                user_name = user.nickname()
 	
 	return home_template.render(fridge_state = fridgeCSSClass,
                                     last_opened_time = str(last_opened_time),
                                     polling_state = polling_state,
                                     logged_in = logged_in,
-                                    user_url = url)
+                                    user_url = url,
+                                    user_name = user_name)
 
 @bottle.route('/change_state')
 def change_state():

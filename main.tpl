@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1" >
 		<script type="text/javascript" src="/_ah/channel/jsapi"></script>
 		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/json2/20130526/json2.min.js"></script>
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
@@ -11,15 +12,15 @@
 	<body>
 		<div id="fridgeStateContainer" class="{{fridge_state}}">
 			<div id="lastOpenedTime" class="digitalFont {{fridge_state}}"><span id="lastOpenedText"></span></div>
-			<div id="pollingSpeed" class="{{polling_state}} {{fridge_state}}"></div>
+			<a href="{{user_url}}"><div id="pollingSpeed" class="{{polling_state}} {{fridge_state}}"></div></a>
+			<div id="fridgeWhiteboard">{{user_name}}</div>
 		</div>
 		
-		 <script>
-
+		<script>
 			var fridgeStates = ["", "fridgeStateOpen", "fridgeStateClosed", "fridgeStateUnknown", "fridgeStateTransition"]
 			var currentState = "{{ fridge_state }}";
 			var lastOpenedDate = moment('{{ last_opened_time }}', 'YYYY-MM-DD HH:mm:ss.SSS Z')
-			var userURL = '{{ user_url }}' 
+			var userURL = '{{ user_url }}'
 			
 			function updateFridgeState(stateNumber)
 			{
@@ -33,7 +34,7 @@
 				{
 					$("#fridgeStateContainer, #pollingSpeed, #lastOpenedTime").removeClass(currentState).addClass(newState);
 					currentState = newState;
-					
+				
 					updateLastOpenedTime(moment())
 				}
 			}
@@ -42,10 +43,6 @@
 			
 			$(function()
 			{
-				$("#pollingSpeed").on("click", function()
-				{
-					window.location = userURL;
-				})
 			
 				preload([
 					'/images/fridge_closed.png',
