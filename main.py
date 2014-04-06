@@ -33,24 +33,20 @@ def home():
         if (last_opened_time is None):
                 last_opened_time = ""
 
-
         url = users.create_login_url("/")
         logged_in = False
         polling_state = "slowPolling"
         user = users.get_current_user()
-        user_name = ""
         if user:
                 url = users.create_logout_url("/")
                 logged_in = True
                 polling_state = "fastPolling"
-                user_name = user.nickname()
-	
+
 	return home_template.render(fridge_state = fridgeCSSClass,
                                     last_opened_time = str(last_opened_time),
                                     polling_state = polling_state,
                                     logged_in = logged_in,
-                                    user_url = url,
-                                    user_name = user_name)
+                                    user_url = url)
 
 @bottle.route('/change_state')
 def change_state():
@@ -76,7 +72,7 @@ def get_last_opened_time():
                 last_opened_time = current_state.state_time
 
         return last_opened_time
-                
+
 @bottle.route('/request_channel')
 def request_channel():
         return "nada"

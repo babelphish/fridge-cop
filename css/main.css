@@ -47,30 +47,30 @@ table {
 {
 	position: relative;
 	top: 50%;
-	width: 320px;
-	height: 350px;
-	margin-top: -175px;
-	z-index: 5;
 	margin-left: auto;
 	margin-right: auto;
+	width: 400px;
+	height: 380px;
+	margin-top: -200px;
 }
 
 #fridgeStateContainer.fridgeStateOpen
 {
-	background: url("../images/fridge_open.png") no-repeat;
+	background: url("../images/fridge_open2.png") no-repeat;
 	background-size: contain;
-	background-position:center;
+	background-position: center;
 }
 
 #fridgeStateContainer.fridgeStateClosed
 {
-	background: url("../images/fridge_closed.png") no-repeat;
+	background: url("../images/fridge_closed2.png") no-repeat;
 	background-size: contain;
 	background-position:center;
 }
 
 #pollingSpeed
 {
+	display: block;
 	position: relative;
 	width: 40px;
 	height: 40px;
@@ -115,24 +115,15 @@ table {
 	margin-left: auto;
 	margin-right: auto;
 	width: 4em;
-	top: -0.2em; 
-	position: relative;
+	top: 0.45em; 
+	position: absolute;
 	background: url("../images/clock.png") no-repeat center;
 	background-size: contain;
 	height: 1.5em;
 	line-height: 1.4em;
 	text-align: center;
-	left: 19px;
-}
-
-#lastOpenedTime.fridgeStateOpen
-{
-	top: -0.2em;
-}
-
-#lastOpenedTime.fridgeStateClosed
-{
-	top: -1.1em;
+	left: 200px;
+	z-index: -1;
 }
 
 #lastOpenedText
@@ -149,18 +140,17 @@ table {
 
 #fridgeWhiteboard
 {
-	width: 130px;
-	height: 65px;
-	margin-left: auto;
-	margin-right: auto;
+	width: 70px;
+	height: 50px;
 	text-align: center;
 	font-family: marker;
 	background: url("../images/whiteboard.png") no-repeat center;
 	background-size: 100% 100%;
 	z-index: 10;
-	top: 210px;
-	position: relative;
-	padding: 10px;
+	top: 150px;
+	position: absolute;
+	padding-top: 10px;
+	left: 215px;
 }
 
 html, body

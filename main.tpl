@@ -12,8 +12,8 @@
 	<body>
 		<div id="fridgeStateContainer" class="{{fridge_state}}">
 			<div id="lastOpenedTime" class="digitalFont {{fridge_state}}"><span id="lastOpenedText"></span></div>
-			<a href="{{user_url}}"><div id="pollingSpeed" class="{{polling_state}} {{fridge_state}}"></div></a>
-			<div id="fridgeWhiteboard">{{user_name}}</div>
+			<a id="pollingSpeed" href="{{user_url}}"  class="{{polling_state}} {{fridge_state}}"></a>
+			<div id="fridgeWhiteboard" style="{{'display:none' if (not logged_in) or (fridge_state != 'fridgeStateClosed') else '' }}"></div>
 		</div>
 		
 		<script>
@@ -32,6 +32,11 @@
 				
 				if (newState != currentState)
 				{
+					if (newState != 'fridgeStateClosed')
+						$("#fridgeWhiteboard").hide()
+					else
+						$("#fridgeWhiteboard").show()					
+					
 					$("#fridgeStateContainer, #pollingSpeed, #lastOpenedTime").removeClass(currentState).addClass(newState);
 					currentState = newState;
 				
