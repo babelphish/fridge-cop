@@ -10,5 +10,6 @@ class ContainerState:
 
 class FridgeDoorState(ndb.Model):
 	door_state = ndb.IntegerProperty(required=True)
-	state_time = ndb.DateTimeProperty(auto_now=True)
+	last_door_state = ndb.IntegerProperty(required=True)
+	state_time = ndb.DateTimeProperty(auto_now=False, required=True)
 	

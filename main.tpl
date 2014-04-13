@@ -17,11 +17,15 @@
 		</div>
 		
 		<script>
+			var serverDateFormat = 'YYYY-MM-DD HH:mm:ss.SSS Z'
 			var fridgeStates = ["", "fridgeStateOpen", "fridgeStateClosed", "fridgeStateUnknown", "fridgeStateTransition"]
 			var currentState = "{{ fridge_state }}";
-			var lastOpenedDate = moment('{{ last_opened_time }}', 'YYYY-MM-DD HH:mm:ss.SSS Z')
+			var lastOpenedDate = moment('{{ last_opened_time }}', serverDateFormat)
 			var userURL = '{{ user_url }}'
-			
+			var serverTime = moment('{{ server_time }}', serverDateFormat) //
+			var delay_seconds = {{ delay_seconds }}
+			var milliseconds_offset = moment().diff(serverTime)
+						
 			function updateFridgeState(stateNumber)
 			{
 				newState = "";
@@ -35,7 +39,7 @@
 					if (newState != 'fridgeStateClosed')
 						$("#fridgeWhiteboard").hide()
 					else
-						$("#fridgeWhiteboard").show()					
+						$("#fridgeWhiteboard").show()
 					
 					$("#fridgeStateContainer, #pollingSpeed, #lastOpenedTime").removeClass(currentState).addClass(newState);
 					currentState = newState;
@@ -45,19 +49,27 @@
 			}
 		 
 			var timer = null;
+			var token = '{{channel_token}}'
 			
 			$(function()
 			{
-			
 				preload([
-					'/images/fridge_closed.png',
-					'/images/fridge_open.png',
+					'/images/fridge_closed2.png',
+					'/images/fridge_open2.png',
 					'/images/rabbit.png',
 					'/images/snail.png'
 				]);
 
 				updateLastOpenedTime(lastOpenedDate);
-				timer = setInterval(updateFridgeStatus, 1000);
+				
+				if (token && token != '') //then it's channel time baby
+				{
+					startListeningChannel(token);
+				}
+				else //start polling
+				{
+					timer = setInterval(updateFridgeStatus, 1000);
+				}
 			})
 
 			function updateLastOpenedTime(lastOpenedDate)
@@ -86,16 +98,35 @@
 				});
 			}
 			
-			/*
-			socket = channel.open();
-			socket.onopen = function() { alert('open') };
-			socket.onmessage = function(e) 
+			function startListeningChannel(token)
 			{
-				
-			};
-			socket.onerror = function() { alert('error') };
-			socket.onclose = function() { alert('close!') };
-			*/
+				var channel = new goog.appengine.Channel(token);
+				var socket = channel.open();
+				socket.onopen = function() {  };
+				socket.onmessage = function(e) 
+				{
+					var data = JSON.parse(e.data);
+					updateFridgeState(data.fridge.state)
+				};
+				socket.onerror = function(e) 
+				{
+					if (e.code == 401)
+					{
+						$.get("/request_channel").done(function(newChannel)
+						{
+							setTimeout(function() {startListeningChannel(newChannel) }, 5000)
+						})
+					}
+					else
+					{
+						alert('unknown error')
+					};
+				}
+				socket.onclose = function(e) 
+				{ 
+					//alert('close!') 
+				};
+			}
 		</script>
 	</body>
 </html>
