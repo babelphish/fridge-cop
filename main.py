@@ -62,21 +62,30 @@ def home():
                                     server_time = str(server_time))
 
 @bottle.route('/change_state')
-@ndb.transactional
 def change_state():
-        try:
-                new_state = int(request.query.new_state)
-                current_state = int(get_current_state())
+        new_state = int(request.query.new_state)
 
-                if (current_state == new_state):
-                        return "Same Status"
-                else:
-                        set_current_state(new_state)
-                        return "New Status"
-        except Exception as e:
-                return str(e)
+        set_state_success = set_current_state(new_state)
+        if (set_state_success): #then we broadcast the new state to all our channels
+                state_change = json.dumps({ 'fridge' : { 'state' : new_state } })
+                broadcast_state(state_change)
+                return "New Status"
+        else:
+                return "Same Status"
 
-def set_current_state(new_state):
+def broadcast_state(message):
+        channel_list = active_channels()
+        for active_channel in channel_list:
+                channel.send_message(active_channel.user_id, message)
+        
+
+#this all has to be in a transaction, otherwise the get state/set state can be inconsistent
+@ndb.transactional
+def set_current_state(new_state):        
+        current_state = int(get_current_state())
+        if (current_state == new_state): #then the state didn't actually change
+                return False
+        
 	updated_door_entity = FridgeDoorState.get_by_id(parent = door_ancestor_key, id = 'current')
         if (not updated_door_entity):
                 updated_door_entity = FridgeDoorState(parent = door_ancestor_key, id = 'current')
@@ -92,11 +101,7 @@ def set_current_state(new_state):
         updated_door_entity.door_state = new_state
         updated_door_entity.state_time = datetime.datetime.now()
         updated_door_entity.put()
-        
-        #channel_list = active_channels()
-        #state_change = json.dumps({ 'fridge' : { 'state' : new_state } })
-        #for active_channel in channel_list:
-        #        channel.send_message(active_channel.user_id, state_change)
+        return True #we know if we got here then the state changed
 
 def get_last_opened_time():
         current_state = FridgeDoorState.get_by_id(parent = door_ancestor_key, id = 'current')
