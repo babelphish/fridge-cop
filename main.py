@@ -1,5 +1,5 @@
 from google.appengine.api import channel, memcache
-from bottle import Bottle, SimpleTemplate, static_file, request
+from bottle import Bottle, SimpleTemplate, static_file, request, response
 from fridge_model import FridgeDoorState
 from fridge_door import FridgeDoor
 from user_channel import UserChannel
@@ -22,7 +22,7 @@ fridge_last_opened_cache_key = "fridgeLastOpened"
 channel_duration_minutes = 60 * 24
 current_delay_seconds = 60
 door_ancestor_key = ndb.Key("FridgeDoor", "main")
-
+date_1970 = datetime.datetime.utcfromtimestamp(0)
 
 @bottle.route('/')
 def home():
@@ -147,22 +147,51 @@ def active_channels():
 def get_current_delay():
         return current_delay_seconds
 
+def get_normalized_timestamp_start(server_time):
+        delay = get_current_delay()
+        delayed_start = server_time - datetime.timedelta(seconds = delay)
+        seconds_from_1970 = int((delayed_start - date_1970).total_seconds())
+        normalized_timestamp_start = delayed_start - datetime.timedelta(seconds= (seconds_from_1970 % delay))
+        normalized_timestamp_start = normalized_timestamp_start.replace(microsecond = 0) #zero out microseconds
+        return normalized_timestamp_start
+
 @bottle.route('/delayed_state')
 def get_delayed_state():
         try:
-                now = datetime.datetime.now()
-                seconds = (now- datetime.datetime.utcfromtimestamp(0)).total_seconds()
-                normalized_timestamp = now - datetime.timedelta(milliseconds=int((seconds % get_current_delay()) * 1000))
-                door_states = FridgeDoorState.query(ancestor = door_ancestor_key, filters = FridgeDoorState.state_time > normalized_timestamp).fetch()
+                response.set_header("Cache-Control", "no-cache, no-store, must-revalidate")
+                response.set_header("Pragma", "no-cache")
+                response.set_header("Expires", "0")
+                #calculate everything associated with getting state
+                server_time = datetime.datetime.now()
+                normalized_timestamp_start = get_normalized_timestamp_start(server_time)
+                cache_key = str((normalized_timestamp_start - date_1970).total_seconds())
+                state_data = memcache.get(cache_key)
+                
+                if state_data is None:
+                        normalized_timestamp_end = normalized_timestamp_start + datetime.timedelta(seconds = get_current_delay())           
+                        door_states = FridgeDoorState.query(ancestor = door_ancestor_key,
+                                                            filters = ndb.AND(FridgeDoorState.state_time >= normalized_timestamp_start
+                                                                              , FridgeDoorState.state_time < normalized_timestamp_end)
+                                                            ).fetch()
 
-                state_data = {
-                        "states" : []
-                }
-                for state in door_states:
-                        found_state = { "fridge" : { "state" : 1 }}
-                        state_data["states"].append(found_state)
-                         
-                return json.dumps(state_data)
+                        state_data = {
+                                "timestamp_start" : str(normalized_timestamp_start),
+                                "timestamp_end" : str(normalized_timestamp_end),
+                                "states" : [],
+                        }
+                        for door_state in door_states:
+                                found_state = {
+                                        "s" : str(door_state.door_state),
+                                        "t" : str(door_state.state_time),
+                                        "ls" : str(door_state.last_door_state),
+                                        "type" : "fridge"
+                                }
+                                state_data["states"].append(found_state)
+
+                        state_data = json.dumps(state_data)
+                        memcache.add(cache_key, state_data)
+                        
+                return state_data
         except Exception as e:
                 return str(e)
 

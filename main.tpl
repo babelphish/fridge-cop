@@ -68,7 +68,7 @@
 				}
 				else //start polling
 				{
-					timer = setInterval(updateFridgeStatus, 1000);
+					timer = setInterval(updateFridgeStatus, delay_seconds);
 				}
 			})
 
