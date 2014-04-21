@@ -20,46 +20,37 @@ home_template = SimpleTemplate(name='main.tpl')
 fridge_door_state_cache_key = "fridgeDoorState"
 fridge_last_opened_cache_key = "fridgeLastOpened"
 channel_duration_minutes = 60 * 24
-current_delay_seconds = 60
+current_delay_seconds = 10
 door_ancestor_key = ndb.Key("FridgeDoor", "main")
 date_1970 = datetime.datetime.utcfromtimestamp(0)
 
 @bottle.route('/')
 def home():
-	current_state = int(get_current_state())
-	if (current_state == 1):
-		fridgeCSSClass = 'fridgeStateOpen'
-	elif (current_state == 2):
-		fridgeCSSClass = 'fridgeStateClosed'
-	elif (current_state == 3):
-		fridgeCSSClass = 'fridgeStateUnknown'
-	elif (current_state == 4):
-		fridgeCSSClass = 'fridgeStateTransition'
+        try:
+                user = users.get_current_user()
+                logged_in = (user is not None)
 
-        last_opened_time = get_last_opened_time()
-        if (last_opened_time is None):
-                last_opened_time = ""
+                if user:
+                        serialized_states = get_serialized_current_state()
+                        url = users.create_logout_url("/")
+                        polling_state = "fastPolling"
+                        token = request_channel()
+                else:
+                        serialized_states = get_serialized_delayed_states()
+                        url = users.create_login_url("/")        
+                        polling_state = "slowPolling"      
+                        token = ''
 
-        url = users.create_login_url("/")
-        logged_in = False
-        polling_state = "slowPolling"
-        user = users.get_current_user()
-        token = ''
-        if user:
-                url = users.create_logout_url("/")
-                logged_in = True
-                polling_state = "fastPolling"
-                token = request_channel()
-
-        server_time = datetime.datetime.now()
-	return home_template.render(fridge_state = fridgeCSSClass,
-                                    last_opened_time = str(last_opened_time),
-                                    polling_state = polling_state,
-                                    logged_in = logged_in,
-                                    user_url = url,
-                                    channel_token = token,
-                                    delay_seconds = current_delay_seconds,
-                                    server_time = str(server_time))
+                server_time = datetime.datetime.now()
+                return home_template.render(serialized_states = serialized_states,
+                                            polling_state = polling_state,
+                                            logged_in = logged_in,
+                                            user_url = url,
+                                            channel_token = token,
+                                            delay_seconds = current_delay_seconds,
+                                            server_time = str(server_time))
+        except Exception as e:
+                return str(e)
 
 @bottle.route('/change_state')
 def change_state():
@@ -102,15 +93,6 @@ def set_current_state(new_state):
         updated_door_entity.state_time = datetime.datetime.now()
         updated_door_entity.put()
         return True #we know if we got here then the state changed
-
-def get_last_opened_time():
-        current_state = FridgeDoorState.get_by_id(parent = door_ancestor_key, id = 'current')
-        if (current_state is None):
-                last_opened_time = None
-        else:
-                last_opened_time = current_state.state_time
-
-        return last_opened_time
 
 @bottle.route('/request_channel')
 def request_channel():
@@ -155,45 +137,54 @@ def get_normalized_timestamp_start(server_time):
         normalized_timestamp_start = normalized_timestamp_start.replace(microsecond = 0) #zero out microseconds
         return normalized_timestamp_start
 
-@bottle.route('/delayed_state')
-def get_delayed_state():
+@bottle.route('/delayed_states')
+def get_delayed_states_with_headers():
         try:
                 response.set_header("Cache-Control", "no-cache, no-store, must-revalidate")
                 response.set_header("Pragma", "no-cache")
                 response.set_header("Expires", "0")
-                #calculate everything associated with getting state
-                server_time = datetime.datetime.now()
-                normalized_timestamp_start = get_normalized_timestamp_start(server_time)
-                cache_key = str((normalized_timestamp_start - date_1970).total_seconds())
-                state_data = memcache.get(cache_key)
-                
-                if state_data is None:
-                        normalized_timestamp_end = normalized_timestamp_start + datetime.timedelta(seconds = get_current_delay())           
-                        door_states = FridgeDoorState.query(ancestor = door_ancestor_key,
-                                                            filters = ndb.AND(FridgeDoorState.state_time >= normalized_timestamp_start
-                                                                              , FridgeDoorState.state_time < normalized_timestamp_end)
-                                                            ).fetch()
+                return get_delayed_states()
 
-                        state_data = {
-                                "timestamp_start" : str(normalized_timestamp_start),
-                                "timestamp_end" : str(normalized_timestamp_end),
-                                "states" : [],
-                        }
-                        for door_state in door_states:
-                                found_state = {
-                                        "s" : str(door_state.door_state),
-                                        "t" : str(door_state.state_time),
-                                        "ls" : str(door_state.last_door_state),
-                                        "type" : "fridge"
-                                }
-                                state_data["states"].append(found_state)
-
-                        state_data = json.dumps(state_data)
-                        memcache.add(cache_key, state_data)
-                        
-                return state_data
         except Exception as e:
                 return str(e)
+
+def get_serialized_current_state():
+        current_state = FridgeDoorState.get_by_id(id = 'current', parent = door_ancestor_key)
+        return serialized_state_list([current_state])
+
+def get_serialized_delayed_states():
+        #calculate everything associated with getting state
+        server_time = datetime.datetime.now()
+        normalized_timestamp_start = get_normalized_timestamp_start(server_time)
+        cache_key = str((normalized_timestamp_start - date_1970).total_seconds())
+        state_data = memcache.get(cache_key)
+
+        if state_data is None:
+                normalized_timestamp_end = normalized_timestamp_start + datetime.timedelta(seconds = get_current_delay())           
+                door_states = FridgeDoorState.query(ancestor = door_ancestor_key,
+                                                    filters = ndb.AND(FridgeDoorState.state_time >= normalized_timestamp_start
+                                                                      , FridgeDoorState.state_time < normalized_timestamp_end)
+                                                    ).order(FridgeDoorState.state_time).fetch()
+
+                state_data = serialized_state_list(door_states)
+                memcache.add(cache_key, state_data)
+
+        return state_data
+
+def serialized_state_list(states):
+        state_data = {
+                "states" : [],
+        }
+        for state in states:
+                found_state = {
+                        "s" : str(state.state),
+                        "t" : str(state.change_time),
+                        "ls" : str(state.last_state),
+                        "type" : "fridge"
+                }
+                state_data["states"].append(found_state)
+
+        return json.dumps(state_data)
 
 @bottle.route('/fridge_state')
 def get_current_state():
@@ -203,6 +194,17 @@ def get_current_state():
                 state_value = current_state.door_state
 
         return str(state_value)
+
+#get the correct delayed state
+def get_delayed_state():
+        try:
+                delay = get_current_delay()
+                now = datetime.datetime.now()
+                delayed_time = now - datetime.timedelta(seconds=delay)
+                state = FridgeDoorState.query(FridgeDoorState.change_time < delayed_time).order(-FridgeDoorState.state_time).get() 
+                return str(state.door_state)
+        except Exception as e:
+                return str(e)
 
 @bottle.route('/js/<filename>')
 def js_static(filename):
