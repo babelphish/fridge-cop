@@ -13,6 +13,11 @@ indexes:
 - kind: FridgeDoorState
   ancestor: yes
   properties:
+  - name: change_time
+
+- kind: FridgeDoorState
+  ancestor: yes
+  properties:
   - name: state_time
 
 - kind: UserChannel

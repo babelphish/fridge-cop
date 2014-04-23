@@ -11,20 +11,20 @@
 	</head>
 
 	<body>
-		<div id="fridgeStateContainer" class="{{fridge_state}}">
-			<div id="lastOpenedTime" class="digitalFont {{fridge_state}}"><span id="lastOpenedText"></span></div>
-			<a id="pollingSpeed" href="{{user_url}}"  class="{{polling_state}} {{fridge_state}}"></a>
-			<div id="fridgeWhiteboard" style="{{'display:none' if (not logged_in) or (fridge_state != 'fridgeStateClosed') else '' }}"></div>
+		<div id="fridgeStateContainer" class="fridgeStateUnknown">
+			<div id="lastOpenedTime" class="digitalFont fridgeStateUnknown"><span id="lastOpenedText"></span></div>
+			<a id="pollingSpeed" href="{{user_url}}"  class="{{polling_state}} fridgeStateUnknown"></a>
+			<div id="fridgeWhiteboard" style="display:none"></div>
 		</div>
 		
 		<script>
 			var serverDateFormat = 'YYYY-MM-DD HH:mm:ss.SSS Z'
-			var serializedStates = "{{ serialized_states }}";
-			var userURL = '{{ user_url }}'
-			var serverTime = moment('{{ server_time }}', serverDateFormat) //
+			var userURL = '{{user_url}}'
+			var serverTime = moment('{{server_time}}', serverDateFormat) //
 			var delaySeconds = {{ delay_seconds }};
 			var token = '{{channel_token}}'
 			var offsetMilliseconds = moment().diff(serverTime)
+			var receivedStates = {{!serialized_states}}
 		</script>
 	</body>
 </html>

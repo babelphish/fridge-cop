@@ -8,8 +8,6 @@ $(function()
 		'/images/rabbit.png',
 		'/images/snail.png'
 	]);
-
-	updateLastOpenedTime(lastOpenedDate);
 	
 	if (token && token != '') //then it's channel time baby
 	{
@@ -20,8 +18,6 @@ $(function()
 		timer = setInterval(updateFridgeStatus, delaySeconds * 1000);
 	}
 })
-
-var receivedStates = []
 
 var updateInProgress = false;
 function updateFridgeStatus()
