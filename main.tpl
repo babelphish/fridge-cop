@@ -24,7 +24,8 @@
 			var delaySeconds = {{ delay_seconds }};
 			var token = '{{channel_token}}'
 			var offsetMilliseconds = moment().diff(serverTime)
-			var receivedStates = {{!serialized_states}}
+			appendStateData({{!serialized_states}})
+			
 		</script>
 	</body>
 </html>

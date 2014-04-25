@@ -1,7 +1,9 @@
 var timer = null;
+var currentState = null;
+var receivedStates = [];
 
 $(function()
-{
+{	
 	preload([
 		'/images/fridge_closed2.png',
 		'/images/fridge_open2.png',
@@ -15,39 +17,49 @@ $(function()
 	}
 	else //start polling
 	{
-		timer = setInterval(updateFridgeStatus, delaySeconds * 1000);
+		updateFridgeStatus(); //do initial update
+		timer = setInterval(updateFridgeStatus, delaySeconds * 1000); //start polling
 	}
 })
 
 var updateInProgress = false;
 function updateFridgeStatus()
 {
-	if (!updateInProgress)
+	$.get("/delayed_states").done(function(delayedStateSerialized) 
 	{
-		updateInProgress = true;
-		$.get("/delayed_states").done(function(delayedStateSerialized) 
-		{
-			var delayedStateData = JSON.parse(delayedStateSerialized)
-			appendStateData(delayedStateData.states);
-		}).always(function() {
-			updateInProgress = false;
-		})
-	}
+		var delayedStateData = JSON.parse(delayedStateSerialized)
+		appendStateData(delayedStateData);
+	}).always(function() {
+		updateInProgress = false;
+	})
 }
 
 function appendStateData(stateDataList)
 {
-	if (stateDataList.length == 0)
+	if (stateDataList.states.length == 0)
 		return;
 	
-	$.each(stateDataList, function(index, stateData)
+	$.each(stateDataList.states, function(index, stateData)
 	{
-		receivedStates.push(new StateData(stateData));
-	})
-	
-	receivedStates.sort(function(a,b) 
-	{
-		return a.timeDiff(b)
+		var stateData = new StateData(stateData)
+		doInsert = true;
+		index = receivedStates.length - 1;
+		while ((index >= 0) && (receivedStates[index].timeDiff(stateData) > 0))
+		{
+			index--;
+		}
+		while ((index >= 0) && (receivedStates[index].timeDiff(stateData) == 0))
+		{
+			if (receivedStates[index].equals(stateData))
+			{
+				doInsert = false;
+				break;
+			}
+		}
+		if (doInsert) //not a duplicate
+		{
+			receivedStates.splice(index + 1, 0, stateData);
+		}
 	})
 	
 	processStates()
@@ -56,7 +68,7 @@ function appendStateData(stateDataList)
 var stateChangeTimer = null
 
 //this function waits the appropriate amount of time for a delayed state change
-function waitForDelayedStateChange()
+function processStates()
 {
 	if(receivedStates.length == 0)
 		return;
@@ -66,12 +78,11 @@ function waitForDelayedStateChange()
 	
 	var index = 0;
 	var nextStateChange = null;
-	var mostRecentStateChange = null;
-	
 	while (index < receivedStates.length)
 	{
 		var stateTime = receivedStates[index].getChangeTime();
-		if (adjustedTime.unix() < stateTime.unix())
+		console.log(adjustedTime.diff(stateTime))
+		if (adjustedTime.diff(stateTime) < 0)
 		{
 			nextStateChange = receivedStates[index];
 			break;
@@ -79,20 +90,24 @@ function waitForDelayedStateChange()
 		index++;
 	}
 	
-	if (mostRecentStateChange != null) //we just make double sure that 
+	if (nextStateChange == null) //find that last state and set it to that
 	{
-		
+		receivedStates[receivedStates.length - 1].apply()
 	}
-	
-	if (nextStateChange != null) //then we have an upcoming state change
+	else //we wait for the next state change
 	{
-		//make sure we cancel
+		window.clearTimeout(stateChangeTimer)
+		stateChangeTimer = setTimeout(function() 
+		{ 
+			nextStateChange.apply();
+			processStates();
+		}, nextStateChange.getChangeTime().diff(adjustedTime))
 	}
 }
 
 function calculateDelayedTime(delaySeconds, offsetMilliseconds)
 {
-	return (moment().subtract(offsetMilliseconds).subtract(delay_seconds * 1000))
+	return (moment().subtract(offsetMilliseconds).subtract(delaySeconds * 2 * 1000))
 }
 
 function preload(arrayOfImages) {
@@ -109,9 +124,8 @@ function startListeningChannel(token)
 	socket.onmessage = function(e) 
 	{
 		var data = JSON.parse(e.data);
-		receivedStates.push(new StateData(e.data))
-		
-		updateFridgeState(data.fridge.state)
+		appendStateData(data)
+		processStates();
 	};
 	socket.onerror = function(e) 
 	{
@@ -143,22 +157,33 @@ function StateData(stateData)
 	
 	this.isFridgeData = function()
 	{
-		return (that.stateType == "fridge")
+		return (that.stateType == "fridge");
 	}
 	
 	this.getChangeTime = function()
 	{
-		return that.eventTime
+		return that.eventTime;
 	}
 	
 	this.getLastState = function()
 	{
-		return that.lastState
+		return that.lastState;
 	}
 	
-	this.state = function()
+	this.getState = function()
 	{
-		return that.state
+		return that.state;
+	}
+	
+	this.getType = function()
+	{
+		return that.stateType;
+	}
+	
+	this.equals = function(b)
+	{
+		var a = that;
+		return ((a.getState() == b.getState()) && (a.getChangeTime().diff(b.getChangeTime()) == 0) && (a.getType() == b.getType()))
 	}
 	
 	this.apply = function()

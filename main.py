@@ -35,11 +35,13 @@ def home():
                         url = users.create_logout_url("/")
                         polling_state = "fastPolling"
                         token = request_channel()
+                        delay_seconds = 0
                 else:
-                        serialized_states = get_serialized_delayed_states()
-                        url = users.create_login_url("/")        
+                        serialized_states = get_serialized_initial_delayed_state()
+                        url = users.create_login_url("/")
                         polling_state = "slowPolling"
                         token = ''
+                        delay_seconds = get_current_delay()
 
                 server_time = datetime.datetime.now()
                 return home_template.render(serialized_states = serialized_states,
@@ -47,7 +49,7 @@ def home():
                                             logged_in = logged_in,
                                             user_url = url,
                                             channel_token = token,
-                                            delay_seconds = current_delay_seconds,
+                                            delay_seconds = delay_seconds,
                                             server_time = str(server_time))
         except Exception as e:
                 return str(e)
@@ -58,8 +60,8 @@ def change_state():
 
         set_state_success = set_current_state(new_state)
         if (set_state_success): #then we broadcast the new state to all our channels
-                state_change = json.dumps({ 'fridge' : { 'state' : new_state } })
-                broadcast_state(state_change)
+                current_state = get_serialized_current_state()
+                broadcast_state(current_state)
                 return "New Status"
         else:
                 return "Same Status"
@@ -87,7 +89,7 @@ def set_current_state(new_state):
                 updated_door_entity.put()
                 #then we update the last_door_state appropriately
                 updated_door_entity.key = ndb.Key(FridgeDoor, 'main', FridgeDoorState, 'current')
-                updated_door_entity.last_state = updated_door_entity.door_state
+                updated_door_entity.last_state = updated_door_entity.state
 
         updated_door_entity.state = new_state
         updated_door_entity.change_time = datetime.datetime.now()
@@ -136,6 +138,16 @@ def get_normalized_timestamp_start(server_time):
         normalized_timestamp_start = delayed_start - datetime.timedelta(seconds= (seconds_from_1970 % delay))
         normalized_timestamp_start = normalized_timestamp_start.replace(microsecond = 0) #zero out microseconds
         return normalized_timestamp_start
+
+#get the correct delayed state
+def get_serialized_initial_delayed_state():
+        delay = get_current_delay()
+        now = datetime.datetime.now()
+        delayed_time = now - datetime.timedelta(seconds=delay)
+        state = FridgeDoorState.query(ancestor = door_ancestor_key, filters = FridgeDoorState.change_time < delayed_time).order(-FridgeDoorState.change_time).get()
+        if (state is None):
+                return '{ states : [] }'
+        return serialized_state_list([state])
 
 @bottle.route('/delayed_states')
 def get_delayed_states_with_headers():
@@ -191,7 +203,7 @@ def get_current_state():
         state_value = 3
         current_state = FridgeDoorState.get_by_id(id = 'current', parent = door_ancestor_key)
         if (current_state is not None):
-                state_value = current_state.door_state
+                state_value = current_state.state
 
         return str(state_value)
 
