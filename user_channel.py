@@ -1,4 +1,5 @@
 from google.appengine.ext import ndb
+import json
 
 """
 class ContainerState:
@@ -13,3 +14,11 @@ class UserChannel(ndb.Model):
         token = ndb.StringProperty(required=True)
         active = ndb.BooleanProperty(required=True, default=True)
 	expiration_time = ndb.DateTimeProperty(required=True)
+
+
+        def serialize(self):
+                return json.dumps({
+                                "token" : self.token,
+                                "expiration" : str(self.expiration_time),
+                                "active" : str(self.active)
+                        }) 

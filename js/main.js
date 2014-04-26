@@ -11,9 +11,9 @@ $(function()
 		'/images/snail.png'
 	]);
 	
-	if (token && token != '') //then it's channel time baby
+	if (channelData) //then it's channel time baby
 	{
-		startListeningChannel(token);
+		startListeningChannel(channelData.token);
 	}
 	else //start polling
 	{
@@ -81,7 +81,6 @@ function processStates()
 	while (index < receivedStates.length)
 	{
 		var stateTime = receivedStates[index].getChangeTime();
-		console.log(adjustedTime.diff(stateTime))
 		if (adjustedTime.diff(stateTime) < 0)
 		{
 			nextStateChange = receivedStates[index];
@@ -129,17 +128,11 @@ function startListeningChannel(token)
 	};
 	socket.onerror = function(e) 
 	{
-		if (e.code == 401)
+		$.get("/request_new_channel").done(function(newChannelData)
 		{
-			$.get("/request_channel").done(function(newChannel)
-			{
-				setTimeout(function() {startListeningChannel(newChannel) }, 5000)
-			})
-		}
-		else
-		{
-			alert('unknown error')
-		};
+			newChannelData = JSON.parse(newChannelData);
+			setTimeout(function() {startListeningChannel(newChannelData.token) }, 5000)
+		})
 	}
 	socket.onclose = function(e) 
 	{ 

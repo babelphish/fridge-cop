@@ -19,12 +19,12 @@
 		
 		<script>
 			var serverDateFormat = 'YYYY-MM-DD HH:mm:ss.SSS Z'
-			var userURL = '{{user_url}}'
-			var serverTime = moment('{{server_time}}', serverDateFormat) //
+			var userURL = '{{user_url}}';
+			var serverTime = moment('{{server_time}}', serverDateFormat);
 			var delaySeconds = {{ delay_seconds }};
-			var token = '{{channel_token}}'
-			var offsetMilliseconds = moment().diff(serverTime)
-			appendStateData({{!serialized_states}})
+			var channelData = {{!channel_data}};
+			var offsetMilliseconds = moment().diff(serverTime);
+			appendStateData({{!serialized_states}});
 			
 		</script>
 	</body>

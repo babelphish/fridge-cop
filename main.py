@@ -40,7 +40,7 @@ def home():
                         serialized_states = get_serialized_initial_delayed_state()
                         url = users.create_login_url("/")
                         polling_state = "slowPolling"
-                        token = ''
+                        token = 'null'
                         delay_seconds = get_current_delay()
 
                 server_time = datetime.datetime.now()
@@ -48,7 +48,7 @@ def home():
                                             polling_state = polling_state,
                                             logged_in = logged_in,
                                             user_url = url,
-                                            channel_token = token,
+                                            channel_data = token,
                                             delay_seconds = delay_seconds,
                                             server_time = str(server_time))
         except Exception as e:
@@ -96,6 +96,15 @@ def set_current_state(new_state):
         updated_door_entity.put()
         return True #we know if we got here then the state changed
 
+@bottle.route('/request_new_channel')
+def request_new_channel():
+        user = users.get_current_user()
+        if (not user):
+                return ''
+                
+        user_id = user.user_id()
+        return generate_new_channel(user_id).serialize()
+
 @bottle.route('/request_channel')
 def request_channel():
         user = users.get_current_user()
@@ -110,17 +119,20 @@ def request_channel():
                         existing_channel.active = True
                         existing_channel.put()
         else:
-                token = channel.create_channel(user_id, duration_minutes = channel_duration_minutes)
-                expiration_time = datetime.datetime.now() + timedelta(minutes = channel_duration_minutes)
-                existing_channel = UserChannel(id = user_id,
-                                               user_id = user_id,
-                                               token = token,
-                                               active = True,
-                                                expiration_time = expiration_time)         
-                existing_channel.put()
-        
+                existing_channel = generate_new_channel(user_id)
                 
-        return token
+        return existing_channel.serialize()
+
+def generate_new_channel(user_id):
+        token = channel.create_channel(user_id, duration_minutes = channel_duration_minutes)
+        expiration_time = datetime.datetime.now() + timedelta(minutes = channel_duration_minutes)
+        existing_channel = UserChannel(id = user_id,
+                                       user_id = user_id,
+                                       token = token,
+                                       active = True,
+                                        expiration_time = expiration_time)         
+        existing_channel.put()
+        return existing_channel
 
 def active_channels():
         now = datetime.datetime.now()
