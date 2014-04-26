@@ -193,7 +193,7 @@ function StateData(stateData)
 			
 			if (newState != currentState)
 			{
-				if (newState != 'fridgeStateClosed')
+				if ((newState != 'fridgeStateClosed') || channelData == null)
 					$("#fridgeWhiteboard").hide()
 				else
 					$("#fridgeWhiteboard").show()
