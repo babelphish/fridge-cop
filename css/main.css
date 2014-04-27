@@ -59,6 +59,7 @@ table {
 	background: url("../images/fridge_open2.png") no-repeat;
 	background-size: contain;
 	background-position: center;
+	cursor: pointer;
 }
 
 #fridgeStateContainer.fridgeStateClosed

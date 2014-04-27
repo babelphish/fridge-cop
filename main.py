@@ -98,12 +98,14 @@ def fridge_point_click():
         if (not user):
                 return json.dumps({ "error" : True, "errorMessage" : "User not logged in."})
 
+        
+
 @bottle.route('/request_new_channel')
 def request_new_channel():
         user = users.get_current_user()
         if (not user):
-                return ''
-                
+                return json.dumps({ "error" : True, "errorMessage" : "Not logged in." })
+
         user_id = user.user_id()
         return generate_new_channel(user_id).serialize()
 

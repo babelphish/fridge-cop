@@ -20,6 +20,24 @@ $(function()
 		updateFridgeStatus(); //do initial update
 		timer = setInterval(updateFridgeStatus, delaySeconds * 1000); //start polling
 	}
+	
+	$("#fridgeStateContainer").on("click", function()
+	{
+		if ($(this).hasClass("fridgeStateOpen"))
+		{
+			$.get("/fridge_click_open").done(function(result) 
+			{
+				result = JSON.parse(result)
+				if (result.error)
+				{
+					alert(result.errorMessage);
+				}
+			}).fail(function()
+			{
+				alert('Click failed! :(');
+			})
+		}
+	})
 })
 
 var updateInProgress = false;
