@@ -23,21 +23,38 @@ $(function()
 	
 	$("#fridgeStateContainer").on("click", function()
 	{
-		if ($(this).hasClass("fridgeStateOpen"))
+		if (userLoggedIn())
 		{
-			$.get("/fridge_click_open").done(function(result) 
+			if ($(this).hasClass("fridgeStateOpen"))
 			{
-				result = JSON.parse(result)
-				if (result.error)
+				$.get("/fridge_click").done(function(result) 
 				{
-					alert(result.errorMessage);
-				}
-			}).fail(function()
-			{
-				alert('Click failed! :(');
-			})
+					result = JSON.parse(result)
+					if (result.error)
+					{
+						alert(result.errorMessage);
+					}
+				}).fail(function()
+				{
+					alert('Click failed! :(');
+				})
+			}
+		}
+		else
+		{
+			//let the person know they need to be logged in
 		}
 	})
+	
+	$('#fridgeContainer').qtip({
+		style: {
+			classes: 'qtip-tipped',
+			width: 500, // Overrides width set by CSS (but no max-width!)
+			height: 200 // Overrides height set by CSS (but no max-height!)
+		},
+		text: "test"
+	})
+	
 })
 
 var updateInProgress = false;
@@ -158,6 +175,11 @@ function startListeningChannel(token)
 	};
 }
 
+function userLoggedIn()
+{
+	return (channelData != null)
+}
+
 function StateData(stateData)
 {
 	var that = this;
@@ -211,7 +233,7 @@ function StateData(stateData)
 			
 			if (newState != currentState)
 			{
-				if ((newState != 'fridgeStateClosed') || channelData == null)
+				if ((newState != 'fridgeStateClosed') || !userLoggedIn())
 					$("#fridgeWhiteboard").hide()
 				else
 					$("#fridgeWhiteboard").show()

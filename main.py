@@ -91,9 +91,9 @@ def set_current_state(new_state):
         current_fridge_entity.put()
         return True #we know if we got here then the state changed
 
-@bottle.route('/fridge_point_click')
+@bottle.route('/fridge_click')
 @ndb.transactional
-def fridge_point_click():
+def fridge_click():
         user = users.get_current_user()
         if (not user):
                 return json.dumps({ "error" : True, "errorMessage" : "User not logged in."})
