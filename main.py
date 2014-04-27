@@ -75,26 +75,28 @@ def broadcast_state(message):
 #this all has to be in a transaction, otherwise the get state/set state can be inconsistent
 @ndb.transactional
 def set_current_state(new_state):        
-        current_state = int(get_current_state())
-        if (current_state == new_state): #then the state didn't actually change
+        current_fridge_entity = get_current_fridge_entity()
+        if (current_fridge_entity.state == new_state): #then the state didn't actually change
                 return False
         
-	updated_door_entity = FridgeDoorState.get_by_id(parent = door_ancestor_key, id = 'current')
-        if (not updated_door_entity):
-                updated_door_entity = FridgeDoorState(parent = door_ancestor_key, id = 'current')
-                updated_door_entity.last_state = 3 #unknown
-                updated_door_entity.change_time = datetime.datetime.now()
-        else:   #we store the old one as a regular entity
-                updated_door_entity.key = ndb.Key(FridgeDoor, 'main', FridgeDoorState, str(uuid.uuid4()))
-                updated_door_entity.put()
-                #then we update the last_door_state appropriately
-                updated_door_entity.key = ndb.Key(FridgeDoor, 'main', FridgeDoorState, 'current')
-                updated_door_entity.last_state = updated_door_entity.state
-
-        updated_door_entity.state = new_state
-        updated_door_entity.change_time = datetime.datetime.now()
-        updated_door_entity.put()
+        #we store the old one as a regular entity
+        current_fridge_entity.key = ndb.Key(FridgeDoor, 'main', FridgeDoorState, str(uuid.uuid4()))
+        current_fridge_entity.put()
+        
+        #then we change back to the current key and update the last_door_state appropriately
+        current_fridge_entity.key = ndb.Key(FridgeDoor, 'main', FridgeDoorState, 'current')
+        current_fridge_entity.last_state = current_fridge_entity.state
+        current_fridge_entity.state = new_state
+        current_fridge_entity.change_time = datetime.datetime.now()
+        current_fridge_entity.put()
         return True #we know if we got here then the state changed
+
+@bottle.route('/fridge_point_click')
+@ndb.transactional
+def fridge_point_click():
+        user = users.get_current_user()
+        if (not user):
+                return json.dumps({ "error" : True, "errorMessage" : "User not logged in."})
 
 @bottle.route('/request_new_channel')
 def request_new_channel():
@@ -119,7 +121,7 @@ def request_channel():
                         existing_channel.active = True
                         existing_channel.put()
         else:
-                existing_channel = generate_new_channel(user_id)
+                existing_channel = generate_new_channel()
                 
         return existing_channel.serialize()
 
@@ -173,7 +175,7 @@ def get_delayed_states_with_headers():
                 return str(e)
 
 def get_serialized_current_state():
-        current_state = FridgeDoorState.get_by_id(id = 'current', parent = door_ancestor_key)
+        current_state = get_current_fridge_entity()
         return serialized_state_list([current_state])
 
 def get_serialized_delayed_states():
@@ -210,14 +212,14 @@ def serialized_state_list(states):
 
         return json.dumps(state_data)
 
-@bottle.route('/fridge_state')
-def get_current_state():
-        state_value = 3
-        current_state = FridgeDoorState.get_by_id(id = 'current', parent = door_ancestor_key)
-        if (current_state is not None):
-                state_value = current_state.state
+def get_current_fridge_entity():
+	door_entity = FridgeDoorState.get_by_id(parent = door_ancestor_key, id = 'current')
+        if (not door_entity):
+                door_entity = FridgeDoorState(parent = door_ancestor_key, id = 'current')
+                door_entity.last_state = 3 #unknown
+                door_entity.change_time = datetime.datetime.now()
 
-        return str(state_value)
+        return door_entity
 
 @bottle.route('/js/<filename>')
 def js_static(filename):
