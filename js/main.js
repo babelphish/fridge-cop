@@ -21,7 +21,7 @@ $(function()
 		timer = setInterval(updateFridgeStatus, delaySeconds * 1000); //start polling
 	}
 	
-	$("#fridgeStateContainer").on("click", function()
+	$("#fridgeClickOverlay").on("click", function()
 	{
 		if (userLoggedIn())
 		{
@@ -46,13 +46,48 @@ $(function()
 		}
 	})
 	
-	$('#fridgeContainer').qtip({
-		style: {
-			classes: 'qtip-tipped',
-			width: 500, // Overrides width set by CSS (but no max-width!)
-			height: 200 // Overrides height set by CSS (but no max-height!)
+	$("#lastOpenedOverlay").qtip({
+		style: 
+		{
+			classes: 'qtip-bootstrap',
+			width: 150, // Overrides width set by CSS (but no max-width!)
 		},
-		text: "test"
+		content: 
+		{
+            text: "This is the last time the fridge was open."
+        },
+		position: 
+		{
+			my: "center left",
+			at: "center right"
+		}
+	});
+	
+	$("#fridgeClickOverlay").qtip({
+		style: 
+		{
+			classes: 'qtip-bootstrap',
+			width: 150
+		},
+		content:
+		{
+            text: function()
+			{
+				if (currentState == "fridgeStateClosed")
+				{
+					return "The fridge is closed right now."
+				}
+				else if (currentState == "fridgeStateOpen")
+				{
+					return "The fridge is open."
+				}
+			}
+        },
+		position: 
+		{
+			my: "center left",
+			at: "center right"
+		}
 	})
 	
 })
@@ -145,8 +180,9 @@ function calculateDelayedTime(delaySeconds, offsetMilliseconds)
 }
 
 function preload(arrayOfImages) {
-	$(arrayOfImages).each(function(){
-		$('<img/>')[0].src = this;
+	$("body").append('<div id="imagePreloadArea" style="width: 0px; height: 0px; position: absolute;">');
+	$(arrayOfImages).each(function(index, imageLocation){
+		$("#imagePreloadArea").append('<img style="width:0px; height:0px" src="' + imageLocation + '"/>');
 	});
 }
 

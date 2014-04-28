@@ -1,5 +1,5 @@
 application: fridge-cop
-version: 3
+version: 4
 runtime: python27
 api_version: 1
 threadsafe: yes
@@ -7,15 +7,18 @@ threadsafe: yes
 handlers:
 
 - url: /css
+  expiration: 1h
   static_dir: css
 
 - url: /images
+  expiration: 1d
   static_dir: images
   
 - url: /js
   static_dir: js
   
 - url: /fonts
+  expiration: 1d
   static_dir: fonts  
  
 - url: /favicon\.ico
