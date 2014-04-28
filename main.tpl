@@ -8,10 +8,11 @@
 	</head>
 
 	<body>
-		<div id="fridgeStateContainer" class="fridgeStateUnknown">
+		<div id="fridgeStateContainer" class="fridgeStateUnknown unselectable">
 			<div id="lastOpenedTime" class="lastOpenedClockPosition digitalFont"><span id="lastOpenedText"></span></div>
 			<div id="lastOpenedOverlay" class="lastOpenedClockPosition"></div>
 			<div id="fridgeClickOverlay"></div>
+			<div id="fridgeClickToolTip"></div>
 
 			<a id="pollingSpeed" href="{{user_url}}"  class="{{polling_state}}"></a>
 			<div id="fridgeWhiteboard" style="display:none"></div>

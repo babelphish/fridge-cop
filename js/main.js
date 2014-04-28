@@ -71,17 +71,7 @@ $(function()
 		},
 		content:
 		{
-            text: function()
-			{
-				if (currentState == "fridgeStateClosed")
-				{
-					return "The fridge is closed right now."
-				}
-				else if (currentState == "fridgeStateOpen")
-				{
-					return "The fridge is open."
-				}
-			}
+            text: $("#fridgeClickToolTip")
         },
 		position: 
 		{
@@ -269,6 +259,22 @@ function StateData(stateData)
 			
 			if (newState != currentState)
 			{
+				if (newState == 'fridgeStateOpen')
+				{
+					if (userLoggedIn())
+					{
+						$("#fridgeClickToolTip").text("It's open! Click it for sweet fridge points!")
+					}
+					else
+					{
+						$("#fridgeClickToolTip").text("My fridge is open, but you aren't logged in.  Log in to earn fridge points.");
+					}
+				}
+				else
+				{
+					$("#fridgeClickToolTip").html('My fridge.  Right now it\'s <span style="font-weight: bold">closed</span>.');
+				}
+			
 				if ((newState != 'fridgeStateClosed') || !userLoggedIn())
 					$("#fridgeWhiteboard").hide()
 				else
