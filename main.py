@@ -94,11 +94,14 @@ def set_current_state(new_state):
 @bottle.route('/fridge_point_click')
 @ndb.transactional
 def fridge_point_click():
+        click_time = datetime.datetime.now()
+        current_fridge_entity = get_current_fridge_entity()
+
         user = users.get_current_user()
         if (not user):
                 return json.dumps({ "error" : True, "errorMessage" : "User not logged in."})
 
-        
+        return json.dumps({ "error" : False, "points" : 0 })
 
 @bottle.route('/request_new_channel')
 def request_new_channel():
@@ -188,7 +191,7 @@ def get_serialized_delayed_states():
         state_data = memcache.get(cache_key)
 
         if state_data is None:
-                normalized_timestamp_end = normalized_timestamp_start + datetime.timedelta(seconds = get_current_delay())           
+                normalized_timestamp_end = normalized_timestamp_start + datetime.timedelta(seconds = get_current_delay())
                 door_states = FridgeDoorState.query(ancestor = door_ancestor_key,
                                                     filters = ndb.AND(FridgeDoorState.change_time >= normalized_timestamp_start
                                                                       , FridgeDoorState.change_time < normalized_timestamp_end)
@@ -222,6 +225,10 @@ def get_current_fridge_entity():
                 door_entity.change_time = datetime.datetime.now()
 
         return door_entity
+
+@bottle.route('/admin/test')
+def home():
+        return SimpleTemplate(name='test_points.tpl').render()
 
 @bottle.route('/js/<filename>')
 def js_static(filename):

@@ -25,6 +25,10 @@ handlers:
   static_files: favicon.ico
   upload: favicon\.ico
 
+- url: /admin/test
+  script: main.bottle
+  login: admin
+  
 - url: .*
   script: main.bottle
 

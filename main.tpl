@@ -12,7 +12,7 @@
 			<div id="lastOpenedTime" class="lastOpenedClockPosition digitalFont"><span id="lastOpenedText"></span></div>
 			<div id="lastOpenedOverlay" class="lastOpenedClockPosition"></div>
 			<div id="fridgeClickOverlay"></div>
-			<div id="fridgeClickToolTip"></div>
+			<div id="fridgeClickToolTip" style="display:none"></div>
 
 			<a id="pollingSpeed" href="{{user_url}}"  class="{{polling_state}}"></a>
 			<div id="fridgeWhiteboard" style="display:none"></div>
