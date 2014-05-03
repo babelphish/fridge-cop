@@ -10,6 +10,9 @@ import logging
 import datetime
 import json
 import uuid
+import sys, os
+from user_points import UserPoints
+from user_point import UserPoint
 
 # Run the Bottle wsgi application. We don't need to call run() since our
 # application is embedded within an App Engine WSGI application server.
@@ -92,16 +95,48 @@ def set_current_state(new_state):
         return True #we know if we got here then the state changed
 
 @bottle.route('/fridge_point_click')
-@ndb.transactional
 def fridge_point_click():
         click_time = datetime.datetime.now()
-        current_fridge_entity = get_current_fridge_entity()
+        try:
+                user = users.get_current_user()
+                if (not user):
+                        return json.dumps({ "error" : True, "errorMessage" : "User not logged in."})
 
-        user = users.get_current_user()
-        if (not user):
-                return json.dumps({ "error" : True, "errorMessage" : "User not logged in."})
+                current_fridge_entity = get_current_fridge_entity()
 
-        return json.dumps({ "error" : False, "points" : 0 })
+                if (current_fridge_entity.state == 1):
+                        total_points = increment_user_point(user, current_fridge_entity)
+
+                        if (total_points is not None):
+                                return json.dumps({ "error" : False,  "points" : total_points })
+                        else:
+                                return json.dumps({ "error" : True, "errorMessage" : "You already got a point for this one!", "time" : str(click_time) })
+                else:
+                        return json.dumps({ "error" : True, "errorMessage" : "Fridge is closed :(" })
+        except Exception as e:
+                #exc_type, exc_obj, exc_tb = sys.exc_info()
+                #fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                #result = str(exc_type) + str(fname) + str(exc_tb.tb_lineno)
+                return json.dumps({ "error" : True, "errorMessage" : "Unknown Error." }) # + result + " " + str(e) })
+
+@ndb.transactional(xg=True)
+def increment_user_point(user, current_fridge_entity):
+        user_id = str(user.user_id())
+        point_key = ndb.Key('UserPoints', user_id, 'UserPoint', current_fridge_entity.equality_key())
+        point = point_key.get()
+        if (point is None):
+                point = UserPoint(key=point_key)
+                point.user_id = user_id
+                point.datetime_awarded = datetime.datetime.now()
+                point_future = point.put_async()
+                userPoints = UserPoints.get_or_insert(user_id, user_id = user_id)
+                userPoints.all_time_total += 1
+                points_future = userPoints.put_async()
+                points_future.get_result()
+                point_future.get_result()
+                return userPoints.all_time_total
+        else:
+                return None
 
 @bottle.route('/request_new_channel')
 def request_new_channel():
@@ -218,7 +253,7 @@ def serialized_state_list(states):
         return json.dumps(state_data)
 
 def get_current_fridge_entity():
-	door_entity = FridgeDoorState.get_by_id(parent = door_ancestor_key, id = 'current')
+        door_entity = FridgeDoorState.get_by_id(parent = door_ancestor_key, id = 'current')
         if (not door_entity):
                 door_entity = FridgeDoorState(parent = door_ancestor_key, id = 'current')
                 door_entity.last_state = 3 #unknown
@@ -236,8 +271,8 @@ def js_static(filename):
 
 @bottle.route('/images/<filename>')
 def images_static(filename):
-	return static_file(filename, root='/images/')
-	
+    return static_file(filename, root='/images/')
+    
 @bottle.route('/css/<filename>')
 def css_static(filename):
         return static_file(filename, root='/css')

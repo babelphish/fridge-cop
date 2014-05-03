@@ -27,7 +27,7 @@ $(function()
 		{
 			if ($(this).hasClass("fridgeStateOpen"))
 			{
-				$.get("/fridge_click").done(function(result) 
+				$.get("/fridge_point_click").done(function(result) 
 				{
 					result = JSON.parse(result)
 					if (result.error)
