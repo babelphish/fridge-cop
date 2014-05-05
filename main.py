@@ -10,6 +10,10 @@ import logging
 import datetime
 import json
 import uuid
+import sys, os
+from user_points import UserPoints
+from user_point import UserPoint
+from text import Text
 
 # Run the Bottle wsgi application. We don't need to call run() since our
 # application is embedded within an App Engine WSGI application server.
@@ -29,6 +33,7 @@ def home():
         try:
                 user = users.get_current_user()
                 logged_in = (user is not None)
+                points = 0
 
                 if user:
                         serialized_states = get_serialized_current_state()
@@ -36,13 +41,16 @@ def home():
                         polling_state = "fastPolling"
                         token = request_channel()
                         delay_seconds = 0
+                        user_id = str(user.user_id())
+                        userPoints = get_user_points(user)
+                        points = userPoints.all_time_total
                 else:
                         serialized_states = get_serialized_initial_delayed_state()
                         url = users.create_login_url("/")
                         polling_state = "slowPolling"
                         token = 'null'
                         delay_seconds = get_current_delay()
-
+ 
                 server_time = datetime.datetime.now()
                 return home_template.render(serialized_states = serialized_states,
                                             polling_state = polling_state,
@@ -50,7 +58,8 @@ def home():
                                             user_url = url,
                                             channel_data = token,
                                             delay_seconds = delay_seconds,
-                                            server_time = str(server_time))
+                                            server_time = str(server_time),
+                                            points = points)
         except Exception as e:
                 return str(e)
 
@@ -92,18 +101,60 @@ def set_current_state(new_state):
         return True #we know if we got here then the state changed
 
 @bottle.route('/fridge_point_click')
-@ndb.transactional
 def fridge_point_click():
-        user = users.get_current_user()
-        if (not user):
-                return json.dumps({ "error" : True, "errorMessage" : "User not logged in."})
+        click_time = datetime.datetime.now()
+        try:
+                user = users.get_current_user()
+                if (not user):
+                        return json.dumps({ "error" : True, "errorMessage" : "User not logged in."})
+
+                current_fridge_entity = get_current_fridge_entity()
+
+                if (current_fridge_entity.state == 1):
+                        total_points = increment_user_point(user, current_fridge_entity)
+
+                        if (total_points is not None):
+                                return json.dumps({ "error" : False,  "points" : total_points })
+                        else:
+                                return json.dumps({ "error" : True, "errorMessage" : Text.get(Text.ALREADY_GOT_POINT), "time" : str(click_time) })
+                else:
+                        return json.dumps({ "error" : True, "errorMessage" : "Fridge is closed :(" })
+        except Exception as e:
+                if users.is_current_user_admin():
+                        exc_type, exc_obj, exc_tb = sys.exc_info()
+                        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                        result = str(exc_type) + str(fname) + str(exc_tb.tb_lineno)                        
+                        error_message = "Unknown Error." + result + " " + str(e)
+                else:
+                        error_message = "Unknown Error."
+
+                return json.dumps({ "error" : True, "errorMessage" : error_message })
+
+@ndb.transactional(xg=True)
+def increment_user_point(user, current_fridge_entity):
+        user_id = str(user.user_id())
+        point_key = ndb.Key('UserPoints', user_id, 'UserPoint', current_fridge_entity.equality_key())
+        point = point_key.get()
+        if (point is None):
+                point = UserPoint(key=point_key)
+                point.user_id = user_id
+                point.datetime_awarded = datetime.datetime.now()
+                point_future = point.put_async()
+                userPoints = get_user_points(user)
+                userPoints.all_time_total += 1
+                points_future = userPoints.put_async()
+                points_future.get_result()
+                point_future.get_result()
+                return userPoints.all_time_total
+        else:
+                return None
 
 @bottle.route('/request_new_channel')
 def request_new_channel():
         user = users.get_current_user()
         if (not user):
-                return ''
-                
+                return json.dumps({ "error" : True, "errorMessage" : "Not logged in." })
+
         user_id = user.user_id()
         return generate_new_channel(user_id).serialize()
 
@@ -121,7 +172,7 @@ def request_channel():
                         existing_channel.active = True
                         existing_channel.put()
         else:
-                existing_channel = generate_new_channel()
+                existing_channel = generate_new_channel(user_id)
                 
         return existing_channel.serialize()
 
@@ -144,6 +195,10 @@ def active_channels():
 
 def get_current_delay():
         return current_delay_seconds
+
+def get_user_points(user):
+        user_id = str(user.user_id())
+        return UserPoints.get_or_insert(user_id, user_id = user_id, email_address=user.email())
 
 def get_normalized_timestamp_start(server_time):
         delay = get_current_delay()
@@ -186,7 +241,7 @@ def get_serialized_delayed_states():
         state_data = memcache.get(cache_key)
 
         if state_data is None:
-                normalized_timestamp_end = normalized_timestamp_start + datetime.timedelta(seconds = get_current_delay())           
+                normalized_timestamp_end = normalized_timestamp_start + datetime.timedelta(seconds = get_current_delay())
                 door_states = FridgeDoorState.query(ancestor = door_ancestor_key,
                                                     filters = ndb.AND(FridgeDoorState.change_time >= normalized_timestamp_start
                                                                       , FridgeDoorState.change_time < normalized_timestamp_end)
@@ -213,7 +268,7 @@ def serialized_state_list(states):
         return json.dumps(state_data)
 
 def get_current_fridge_entity():
-	door_entity = FridgeDoorState.get_by_id(parent = door_ancestor_key, id = 'current')
+        door_entity = FridgeDoorState.get_by_id(parent = door_ancestor_key, id = 'current')
         if (not door_entity):
                 door_entity = FridgeDoorState(parent = door_ancestor_key, id = 'current')
                 door_entity.last_state = 3 #unknown
@@ -221,14 +276,18 @@ def get_current_fridge_entity():
 
         return door_entity
 
+@bottle.route('/admin/test')
+def home():
+        return SimpleTemplate(name='test_points.tpl').render()
+
 @bottle.route('/js/<filename>')
 def js_static(filename):
         return static_file(filename, root='/js/')
 
 @bottle.route('/images/<filename>')
 def images_static(filename):
-	return static_file(filename, root='/images/')
-	
+    return static_file(filename, root='/images/')
+    
 @bottle.route('/css/<filename>')
 def css_static(filename):
         return static_file(filename, root='/css')

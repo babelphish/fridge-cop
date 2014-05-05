@@ -2,14 +2,30 @@ var timer = null;
 var currentState = null;
 var receivedStates = [];
 
-$(function()
-{	
-	preload([
+var IMAGE =
+	{
+		FRIDGE_CLOSED: 0,
+		OPEN: 1,
+		FAST_POLLING: 2,
+		SLOW_POLLING: 3,
+		SUCCESS: 4,
+		FAILURE: 5
+	}
+
+var images = [
 		'/images/fridge_closed2.png',
 		'/images/fridge_open2.png',
 		'/images/rabbit.png',
-		'/images/snail.png'
-	]);
+		'/images/snail.png',
+		'/images/success.png',
+		'/images/failure.png'
+	]
+
+$(function()
+{	
+	preload(images);
+	
+	var spinner = new GameSpinner("fridgeClickVerifying")
 	
 	if (channelData) //then it's channel time baby
 	{
@@ -20,6 +36,79 @@ $(function()
 		updateFridgeStatus(); //do initial update
 		timer = setInterval(updateFridgeStatus, delaySeconds * 1000); //start polling
 	}
+
+	if (userLoggedIn())
+	{
+		$("#fridgeWhiteboard").show()
+	}
+	
+	$("#fridgeClickOverlay").on("click", function()
+	{
+		if (userLoggedIn() && fridgeIsOpen())
+		{
+			spinner.setText("Verifying Click...");
+			spinner.setImage(IMAGE.FRIDGE_CLOSED);
+			spinner.spin();
+			spinner.show();
+			$.get("/fridge_point_click").done(function(result) 
+			{
+				result = JSON.parse(result)
+				if (result.error)
+				{
+					spinner.setText(result.errorMessage);
+					spinner.setImage(IMAGE.FAILURE);
+				}
+				else
+				{
+					spinner.setText("+1 FRIDGE POINTS YEAHHHH");
+					spinner.setImage(IMAGE.SUCCESS);
+					$("#fridgeWhiteboard").text(result.points);
+				}
+			}).fail(function()
+			{
+				spinner.setText('Click failed! :(');
+				spinner.setImage(IMAGE.FAILURE);
+			}).always(function()
+			{
+				spinner.stop();
+			})
+		}
+	})
+	
+	$("#lastOpenedOverlay").qtip({
+		style: 
+		{
+			classes: 'qtip-bootstrap',
+			width: 150, // Overrides width set by CSS (but no max-width!)
+		},
+		content: 
+		{
+            text: "This is the last time the fridge was open."
+        },
+		position: 
+		{
+			my: "center left",
+			at: "center right"
+		}
+	});
+	
+	$("#fridgeClickOverlay").qtip({
+		style: 
+		{
+			classes: 'qtip-bootstrap',
+			width: 150
+		},
+		content:
+		{
+            text: $("#fridgeClickToolTip")
+        },
+		position: 
+		{
+			my: "center left",
+			at: "center right"
+		}
+	})
+	
 })
 
 var updateInProgress = false;
@@ -32,6 +121,11 @@ function updateFridgeStatus()
 	}).always(function() {
 		updateInProgress = false;
 	})
+}
+
+function getImage(imageIndex)
+{
+	return images[imageIndex];
 }
 
 function appendStateData(stateDataList)
@@ -110,8 +204,9 @@ function calculateDelayedTime(delaySeconds, offsetMilliseconds)
 }
 
 function preload(arrayOfImages) {
-	$(arrayOfImages).each(function(){
-		$('<img/>')[0].src = this;
+	$("body").append('<div id="imagePreloadArea" style="width: 0px; height: 0px; position: absolute;">');
+	$(arrayOfImages).each(function(index, imageLocation){
+		$("#imagePreloadArea").append('<img style="width:0px; height:0px" src="' + imageLocation + '"/>');
 	});
 }
 
@@ -138,6 +233,73 @@ function startListeningChannel(token)
 	{ 
 		//alert('close!') 
 	};
+}
+
+function fridgeIsOpen()
+{
+	return (currentState == "fridgeStateOpen");
+}
+
+function userLoggedIn()
+{
+	return (channelData != null)
+}
+
+function GameSpinner(id)
+{
+	var that = this;
+	var spinner = $("#" + id)
+	spinner.on("click", function() {
+		that.hide();
+	});
+
+	init()
+	
+	//generate 
+	function init()
+	{
+		spinner.addClass("spinContainer gradientBackground")
+		spinner.html(
+			'<p class="spinText">' +
+			'</p>' +
+			'<div class="spinImage"></div>'
+		)
+	}
+	
+	this.setText = function(text)
+	{
+		spinner.find(".spinText").text(text);
+	}
+
+	this.spin = function()
+	{
+		spinner.find(".spinImage").addClass("spinning")
+	}
+
+	this.stop = function()
+	{
+		spinner.find(".spinImage").removeClass("spinning")
+	}
+	
+	this.setImage = function(imageURL)
+	{
+		spinner.find(".spinImage").css("background-image", 'url(' + getImage(imageURL) + ')')
+	}
+	
+	this.show = function()
+	{
+		spinner.show();
+	}
+	
+	this.hide = function()
+	{
+		spinner.hide();
+	}
+	
+	this.fadeOut = function()
+	{
+		spinner.delay(5000).fadeOut({ "duration" : 3000});
+	}
 }
 
 function StateData(stateData)
@@ -193,12 +355,23 @@ function StateData(stateData)
 			
 			if (newState != currentState)
 			{
-				if ((newState != 'fridgeStateClosed') || channelData == null)
-					$("#fridgeWhiteboard").hide()
+				if (newState == 'fridgeStateOpen')
+				{
+					if (userLoggedIn())
+					{
+						$("#fridgeClickToolTip").text("It's open! Click it for sweet fridge points!")
+					}
+					else
+					{
+						$("#fridgeClickToolTip").text("My fridge is open, but you aren't logged in.  Log in to earn fridge points.");
+					}
+				}
 				else
-					$("#fridgeWhiteboard").show()
-				
-				$("#fridgeStateContainer, #pollingSpeed, #lastOpenedTime").removeClass(currentState).addClass(newState);
+				{
+					$("#fridgeClickToolTip").html('My fridge.  Right now it\'s <span style="font-weight: bold">closed</span>.');
+				}
+			
+				$("#fridgeStateContainer").removeClass(currentState).addClass(newState);
 				currentState = newState;
 
 				updateLastOpenedTime(that.getChangeTime())
