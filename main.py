@@ -13,6 +13,7 @@ import uuid
 import sys, os
 from user_points import UserPoints
 from user_point import UserPoint
+from text import Text
 
 # Run the Bottle wsgi application. We don't need to call run() since our
 # application is embedded within an App Engine WSGI application server.
@@ -32,6 +33,7 @@ def home():
         try:
                 user = users.get_current_user()
                 logged_in = (user is not None)
+                points = 0
 
                 if user:
                         serialized_states = get_serialized_current_state()
@@ -39,13 +41,16 @@ def home():
                         polling_state = "fastPolling"
                         token = request_channel()
                         delay_seconds = 0
+                        user_id = str(user.user_id())
+                        userPoints = get_user_points(user)
+                        points = userPoints.all_time_total
                 else:
                         serialized_states = get_serialized_initial_delayed_state()
                         url = users.create_login_url("/")
                         polling_state = "slowPolling"
                         token = 'null'
                         delay_seconds = get_current_delay()
-
+ 
                 server_time = datetime.datetime.now()
                 return home_template.render(serialized_states = serialized_states,
                                             polling_state = polling_state,
@@ -53,7 +58,8 @@ def home():
                                             user_url = url,
                                             channel_data = token,
                                             delay_seconds = delay_seconds,
-                                            server_time = str(server_time))
+                                            server_time = str(server_time),
+                                            points = points)
         except Exception as e:
                 return str(e)
 
@@ -110,14 +116,19 @@ def fridge_point_click():
                         if (total_points is not None):
                                 return json.dumps({ "error" : False,  "points" : total_points })
                         else:
-                                return json.dumps({ "error" : True, "errorMessage" : "You already got a point for this one!", "time" : str(click_time) })
+                                return json.dumps({ "error" : True, "errorMessage" : Text.get(Text.ALREADY_GOT_POINT), "time" : str(click_time) })
                 else:
                         return json.dumps({ "error" : True, "errorMessage" : "Fridge is closed :(" })
         except Exception as e:
-                #exc_type, exc_obj, exc_tb = sys.exc_info()
-                #fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                #result = str(exc_type) + str(fname) + str(exc_tb.tb_lineno)
-                return json.dumps({ "error" : True, "errorMessage" : "Unknown Error." }) # + result + " " + str(e) })
+                if users.is_current_user_admin():
+                        exc_type, exc_obj, exc_tb = sys.exc_info()
+                        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                        result = str(exc_type) + str(fname) + str(exc_tb.tb_lineno)                        
+                        error_message = "Unknown Error." + result + " " + str(e)
+                else:
+                        error_message = "Unknown Error."
+
+                return json.dumps({ "error" : True, "errorMessage" : error_message })
 
 @ndb.transactional(xg=True)
 def increment_user_point(user, current_fridge_entity):
@@ -129,7 +140,7 @@ def increment_user_point(user, current_fridge_entity):
                 point.user_id = user_id
                 point.datetime_awarded = datetime.datetime.now()
                 point_future = point.put_async()
-                userPoints = UserPoints.get_or_insert(user_id, user_id = user_id)
+                userPoints = get_user_points(user)
                 userPoints.all_time_total += 1
                 points_future = userPoints.put_async()
                 points_future.get_result()
@@ -184,6 +195,10 @@ def active_channels():
 
 def get_current_delay():
         return current_delay_seconds
+
+def get_user_points(user):
+        user_id = str(user.user_id())
+        return UserPoints.get_or_insert(user_id, user_id = user_id, email_address=user.email())
 
 def get_normalized_timestamp_start(server_time):
         delay = get_current_delay()

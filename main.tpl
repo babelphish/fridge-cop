@@ -15,7 +15,10 @@
 			<div id="fridgeClickToolTip" style="display:none"></div>
 
 			<a id="pollingSpeed" href="{{user_url}}"  class="{{polling_state}}"></a>
-			<div id="fridgeWhiteboard" style="display:none"></div>
+			<div id="fridgeWhiteboard" class="startHidden">{{points}}</div>
+			<div id="fridgeClickVerifying" class="startHidden">
+
+			</div>
 		</div>
 
 		<script type="text/javascript" src="/_ah/channel/jsapi"></script>

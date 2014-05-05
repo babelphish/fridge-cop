@@ -2,14 +2,30 @@ var timer = null;
 var currentState = null;
 var receivedStates = [];
 
-$(function()
-{	
-	preload([
+var IMAGE =
+	{
+		FRIDGE_CLOSED: 0,
+		OPEN: 1,
+		FAST_POLLING: 2,
+		SLOW_POLLING: 3,
+		SUCCESS: 4,
+		FAILURE: 5
+	}
+
+var images = [
 		'/images/fridge_closed2.png',
 		'/images/fridge_open2.png',
 		'/images/rabbit.png',
-		'/images/snail.png'
-	]);
+		'/images/snail.png',
+		'/images/success.png',
+		'/images/failure.png'
+	]
+
+$(function()
+{	
+	preload(images);
+	
+	var spinner = new GameSpinner("fridgeClickVerifying")
 	
 	if (channelData) //then it's channel time baby
 	{
@@ -20,29 +36,42 @@ $(function()
 		updateFridgeStatus(); //do initial update
 		timer = setInterval(updateFridgeStatus, delaySeconds * 1000); //start polling
 	}
+
+	if (userLoggedIn())
+	{
+		$("#fridgeWhiteboard").show()
+	}
 	
 	$("#fridgeClickOverlay").on("click", function()
 	{
-		if (userLoggedIn())
+		if (userLoggedIn() && fridgeIsOpen())
 		{
-			if ($(this).hasClass("fridgeStateOpen"))
+			spinner.setText("Verifying Click...");
+			spinner.setImage(IMAGE.FRIDGE_CLOSED);
+			spinner.spin();
+			spinner.show();
+			$.get("/fridge_point_click").done(function(result) 
 			{
-				$.get("/fridge_point_click").done(function(result) 
+				result = JSON.parse(result)
+				if (result.error)
 				{
-					result = JSON.parse(result)
-					if (result.error)
-					{
-						alert(result.errorMessage);
-					}
-				}).fail(function()
+					spinner.setText(result.errorMessage);
+					spinner.setImage(IMAGE.FAILURE);
+				}
+				else
 				{
-					alert('Click failed! :(');
-				})
-			}
-		}
-		else
-		{
-			//let the person know they need to be logged in
+					spinner.setText("+1 FRIDGE POINTS YEAHHHH");
+					spinner.setImage(IMAGE.SUCCESS);
+					$("#fridgeWhiteboard").text(result.points);
+				}
+			}).fail(function()
+			{
+				spinner.setText('Click failed! :(');
+				spinner.setImage(IMAGE.FAILURE);
+			}).always(function()
+			{
+				spinner.stop();
+			})
 		}
 	})
 	
@@ -92,6 +121,11 @@ function updateFridgeStatus()
 	}).always(function() {
 		updateInProgress = false;
 	})
+}
+
+function getImage(imageIndex)
+{
+	return images[imageIndex];
 }
 
 function appendStateData(stateDataList)
@@ -201,9 +235,71 @@ function startListeningChannel(token)
 	};
 }
 
+function fridgeIsOpen()
+{
+	return (currentState == "fridgeStateOpen");
+}
+
 function userLoggedIn()
 {
 	return (channelData != null)
+}
+
+function GameSpinner(id)
+{
+	var that = this;
+	var spinner = $("#" + id)
+	spinner.on("click", function() {
+		that.hide();
+	});
+
+	init()
+	
+	//generate 
+	function init()
+	{
+		spinner.addClass("spinContainer gradientBackground")
+		spinner.html(
+			'<p class="spinText">' +
+			'</p>' +
+			'<div class="spinImage"></div>'
+		)
+	}
+	
+	this.setText = function(text)
+	{
+		spinner.find(".spinText").text(text);
+	}
+
+	this.spin = function()
+	{
+		spinner.find(".spinImage").addClass("spinning")
+	}
+
+	this.stop = function()
+	{
+		spinner.find(".spinImage").removeClass("spinning")
+	}
+	
+	this.setImage = function(imageURL)
+	{
+		spinner.find(".spinImage").css("background-image", 'url(' + getImage(imageURL) + ')')
+	}
+	
+	this.show = function()
+	{
+		spinner.show();
+	}
+	
+	this.hide = function()
+	{
+		spinner.hide();
+	}
+	
+	this.fadeOut = function()
+	{
+		spinner.delay(5000).fadeOut({ "duration" : 3000});
+	}
 }
 
 function StateData(stateData)
@@ -275,12 +371,7 @@ function StateData(stateData)
 					$("#fridgeClickToolTip").html('My fridge.  Right now it\'s <span style="font-weight: bold">closed</span>.');
 				}
 			
-				if ((newState != 'fridgeStateClosed') || !userLoggedIn())
-					$("#fridgeWhiteboard").hide()
-				else
-					$("#fridgeWhiteboard").show()
-				
-				$("#fridgeStateContainer, #pollingSpeed, #lastOpenedTime").removeClass(currentState).addClass(newState);
+				$("#fridgeStateContainer").removeClass(currentState).addClass(newState);
 				currentState = newState;
 
 				updateLastOpenedTime(that.getChangeTime())

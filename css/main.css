@@ -26,6 +26,8 @@ footer, header, hgroup, menu, nav, section {
 }
 body {
 	line-height: 1;
+	font-family: sans-serif;
+	font-size: 12pt;
 }
 ol, ul {
 	list-style: none;
@@ -51,6 +53,20 @@ table {
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
+}
+
+.startHidden
+{
+	display: none;
+}
+
+.spinning
+{
+	-webkit-animation: spin 1s linear infinite;
+	-moz-animation: spin 1s linear infinite;
+	-ms-animation: spin 1s linear infinite;
+	-o-animation: spin 1s linear infinite;
+	animation: spin 1s linear infinite;
 }
 
 #fridgeStateContainer
@@ -104,15 +120,10 @@ table {
 	margin-right: auto;
 	background-size: cover;
 	background-position: center;
-	left: 48px;
-	top: 91px;
+	left: -58px;
+	top: 270px;	
 	cursor: pointer;
 	z-index: 10;
-}
-
-#pollingSpeed.fridgeStateOpen
-{
-	display: none;
 }
 
 .slowPolling
@@ -134,7 +145,7 @@ table {
 @font-face
 {
 	font-family: marker;
-	src: url(/fonts/permanent_marker.ttf);
+	src: url(/fonts/oceans.ttf) format('truetype');
 }
 
 .lastOpenedClockPosition
@@ -178,13 +189,95 @@ table {
 	height: 50px;
 	text-align: center;
 	font-family: marker;
+	font-size: 3em;
 	background: url("../images/whiteboard.png") no-repeat center;
 	background-size: 100% 100%;
 	z-index: 10;
-	top: 150px;
-	position: absolute;
+	top: 235px;
+	position: relative;
 	padding-top: 10px;
-	left: 215px;
+	margin-left: auto;
+	margin-right: auto;
+	-webkit-text-stroke: 0.6px;
+}
+
+@-webkit-keyframes spin
+{
+	from { -webkit-transform: rotate(0deg); opacity: 0.7; }
+	50%  { -webkit-transform: rotate(180deg); opacity: 1; }
+	to   { -webkit-transform: rotate(360deg); opacity: 0.7; }
+}
+
+@-moz-keyframes spin
+{
+	from { -moz-transform: rotate(0deg); opacity: 0.7; }
+	50%  { -moz-transform: rotate(180deg); opacity: 1; }
+	to   { -moz-transform: rotate(360deg); opacity: 0.7; }
+}
+
+@-ms-keyframes spin
+{
+	from { -ms-transform: rotate(0deg); opacity: 0.7; }
+	50%  { -ms-transform: rotate(180deg); opacity: 1; }
+	to   { -ms-transform: rotate(360deg); opacity: 0.7; }
+}
+
+@-o-keyframes spin
+{
+	from { -o-transform: rotate(0deg); opacity: 0.7; }
+	50%  { -o-transform: rotate(180deg); opacity: 1; }
+	to   { -o-transform: rotate(360deg); opacity: 0.7; }
+}
+
+@keyframes spin
+{
+	from { -o-transform: rotate(0deg); opacity: 0.7; }
+	50%  { -o-transform: rotate(180deg); opacity: 1; }
+	to   { -o-transform: rotate(360deg); opacity: 0.7; }
+}
+
+.spinContainer
+{
+	width: 80px;
+	height: 100px;
+	text-align: center;
+	background-color: white;
+	border: 1px solid black;
+	margin-left: auto;
+	margin-right: auto;
+	position: relative;
+	z-index: 20;
+	padding: 0.5em;
+	top: -30px;
+	cursor: pointer;
+}
+
+.spinText
+{
+	font-size: .8em;
+	margin: 0.5em;
+}
+
+.spinImage
+{
+	width: 30px;
+	height: 30px;
+	margin-left: auto;
+	margin-right: auto;
+	background-size: contain;
+	background-position: center;
+}
+
+.gradientBackground
+{
+	background: #f2f7fa; /* Old browsers */
+	background: -moz-linear-gradient(top, #f2f7fa 0%, #d9e5ef 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f2f7fa), color-stop(100%,#d9e5ef)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, #f2f7fa 0%,#d9e5ef 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, #f2f7fa 0%,#d9e5ef 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top, #f2f7fa 0%,#d9e5ef 100%); /* IE10+ */
+	background: linear-gradient(to bottom, #f2f7fa 0%,#d9e5ef 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f2f7fa', endColorstr='#d9e5ef',GradientType=0 ); /* IE6-9 */
 }
 
 html, body
