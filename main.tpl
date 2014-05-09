@@ -27,6 +27,7 @@
 		<script src="/js/moment.min.js"></script>
 		<script src="/js/main.js"></script>
 		<script src="//cdn.jsdelivr.net/qtip2/2.2.0/jquery.qtip.min.js"></script>
+		<script src="http://node.fridge-cop.com/socket.io/socket.io.js"></script>
 
 		<script>
 			var serverDateFormat = 'YYYY-MM-DD HH:mm:ss.SSS Z'
@@ -35,7 +36,7 @@
 			var delaySeconds = {{ delay_seconds }};
 			var channelData = {{!channel_data}};
 			var offsetMilliseconds = moment().diff(serverTime);
-			appendStateData({{!serialized_states}});	
+			appendStateData({{!serialized_states}});
 		</script>
 
 	</body>
