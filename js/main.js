@@ -21,22 +21,32 @@ var images = [
 		'/images/failure.png'
 	]
 
+var updateURL = 'http://node.fridge-cop.com/';
+	
 $(function()
 {	
 	preload(images);
 	
 	var spinner = new GameSpinner("fridgeClickVerifying")
-	
-	if (channelData) //then it's channel time baby
-	{
-		startListeningChannel(channelData.token);
-	}
-	else //start polling
-	{
-		updateFridgeStatus(); //do initial update
-		timer = setInterval(updateFridgeStatus, delaySeconds * 1000); //start polling
-	}
 
+	var endPoint = "state_changes";
+	
+	if (document.location.hostname == "localhost")
+	{
+		endPoint = "dev/" + endPoint;
+	}
+	var socket = io.connect(updateURL + endPoint);
+	socket.on('new_states', function (data) 
+	{
+		appendStateData(JSON.parse(data))
+		processStates(0);	
+	});
+	
+	/*
+	updateFridgeStatus(); //do initial update
+	timer = setInterval(updateFridgeStatus, delaySeconds * 1000); //start polling
+	*/
+	
 	if (userLoggedIn())
 	{
 		$("#fridgeWhiteboard").show()
@@ -109,6 +119,7 @@ $(function()
 		}
 	})
 	
+	processStates(0);
 })
 
 var updateInProgress = false;
@@ -155,14 +166,12 @@ function appendStateData(stateDataList)
 			receivedStates.splice(index + 1, 0, stateData);
 		}
 	})
-	
-	processStates()
 }
 
 var stateChangeTimer = null
 
 //this function waits the appropriate amount of time for a delayed state change
-function processStates()
+function processStates(delaySeconds)
 {
 	if(receivedStates.length == 0)
 		return;

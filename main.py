@@ -11,6 +11,8 @@ import datetime
 import json
 import uuid
 import sys, os
+import urllib
+from google.appengine.api import urlfetch
 from user_points import UserPoints
 from user_point import UserPoint
 from text import Text
@@ -27,6 +29,7 @@ channel_duration_minutes = 60 * 24
 current_delay_seconds = 10
 door_ancestor_key = ndb.Key("FridgeDoor", "main")
 date_1970 = datetime.datetime.utcfromtimestamp(0)
+node_url = "http://node.fridge-cop.com/"
 
 @bottle.route('/')
 def home():
@@ -65,21 +68,42 @@ def home():
 
 @bottle.route('/change_state')
 def change_state():
-        new_state = int(request.query.new_state)
+        try:
+                new_state = int(request.query.new_state)
 
-        set_state_success = set_current_state(new_state)
-        if (set_state_success): #then we broadcast the new state to all our channels
-                current_state = get_serialized_current_state()
-                broadcast_state(current_state)
-                return "New Status"
-        else:
-                return "Same Status"
+                set_state_success = set_current_state(new_state)
+                if (set_state_success): #then we broadcast the new state to all our channels
+                        current_state = get_serialized_current_state()
+                        return broadcast_state(current_state)
+                else:
+                        return "Same Status"
+        except Exception as e:
+                return str(e)
+
+def development():
+        return os.environ['SERVER_SOFTWARE'].startswith('Development')
 
 def broadcast_state(message):
-        channel_list = active_channels()
-        for active_channel in channel_list:
-                channel.send_message(active_channel.user_id, message)
+        final_url = node_url
         
+        final_url += "state_change_broadcast?environment="
+
+        if (development()):
+                final_url += "DEV"
+        else:
+                final_url += "PROD"
+        try:
+                form_fields =  {
+                        "message" : message
+                }
+                form_data = urllib.urlencode(form_fields)
+                result= urlfetch.fetch(url=final_url,
+                        payload=form_data,
+                        method=urlfetch.POST,
+                        headers={'Content-Type': 'application/x-www-form-urlencoded'})
+                return "broadcast"
+        except Exception as e:
+                return str(e)
 
 #this all has to be in a transaction, otherwise the get state/set state can be inconsistent
 @ndb.transactional

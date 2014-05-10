@@ -33,7 +33,6 @@
 			var serverDateFormat = 'YYYY-MM-DD HH:mm:ss.SSS Z'
 			var userURL = '{{user_url}}';
 			var serverTime = moment('{{server_time}}', serverDateFormat);
-			var delaySeconds = {{ delay_seconds }};
 			var channelData = {{!channel_data}};
 			var offsetMilliseconds = moment().diff(serverTime);
 			appendStateData({{!serialized_states}});
