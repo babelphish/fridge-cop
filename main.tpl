@@ -8,14 +8,13 @@
 	</head>
 
 	<body>
-		<div id="fridgeStateContainer" class="fridgeStateUnknown unselectable">
+		<div id="fridgeStateContainer" class="unselectable">
 			<div id="lastOpenedTime" class="lastOpenedClockPosition digitalFont"><span id="lastOpenedText"></span></div>
 			<div id="lastOpenedOverlay" class="lastOpenedClockPosition"></div>
 			<div id="fridgeClickOverlay"></div>
 			<div id="fridgeClickToolTip" style="display:none"></div>
 
-			<a id="pollingSpeed" href="{{user_url}}"  class="{{polling_state}}"></a>
-			<div id="fridgeWhiteboard" class="startHidden">{{points}}</div>
+			<div id="fridgeWhiteboard"></div>
 			<div id="fridgeClickVerifying" class="startHidden">
 
 			</div>
@@ -32,10 +31,9 @@
 		<script>
 			var serverDateFormat = 'YYYY-MM-DD HH:mm:ss.SSS Z'
 			var userURL = '{{user_url}}';
-			var serverTime = moment('{{server_time}}', serverDateFormat);
-			var channelData = {{!channel_data}};
-			var offsetMilliseconds = moment().diff(serverTime);
-			appendStateData({{!serialized_states}});
+			var loggedIn = '{{logged_in}}'
+			var points = {{points}}
+			var currentState =({{!serialized_state}});
 		</script>
 
 	</body>

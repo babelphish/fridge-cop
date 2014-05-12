@@ -15,6 +15,7 @@ var IMAGE =
 var images = [
 		'/images/fridge_closed2.png',
 		'/images/fridge_open2.png',
+		'/images/fridge_unknown.png',
 		'/images/rabbit.png',
 		'/images/snail.png',
 		'/images/success.png',
@@ -26,30 +27,39 @@ var updateURL = 'http://node.fridge-cop.com/';
 $(function()
 {	
 	preload(images);
-	
-	var spinner = new GameSpinner("fridgeClickVerifying")
 
+	var spinner = new GameSpinner("fridgeClickVerifying");
 	var endPoint = "state_changes";
+	var reconnect = false;
 	
 	if (document.location.hostname == "localhost")
 	{
 		endPoint = "dev/" + endPoint;
 	}
 	var socket = io.connect(updateURL + endPoint);
+	socket.on('connect', function()
+	{
+		if (reconnect) //then we disconnected, get the latest state again and it's party time
+		{
+		}
+	});
 	socket.on('new_states', function (data) 
 	{
-		appendStateData(JSON.parse(data))
-		processStates(0);	
+		processState(JSON.parse(data))
 	});
-	
-	/*
-	updateFridgeStatus(); //do initial update
-	timer = setInterval(updateFridgeStatus, delaySeconds * 1000); //start polling
-	*/
+	socket.on('disconnect', function()
+	{
+		reconnect = true;
+		new StateData({ "s" : 3, "type" : "fridge" }).apply();
+	});
 	
 	if (userLoggedIn())
 	{
-		$("#fridgeWhiteboard").show()
+		$("#fridgeWhiteboard").text(points)
+	}
+	else
+	{
+		$("#fridgeWhiteboard").text("Log in")
 	}
 	
 	$("#fridgeClickOverlay").on("click", function()
@@ -60,7 +70,7 @@ $(function()
 			spinner.setImage(IMAGE.FRIDGE_CLOSED);
 			spinner.spin();
 			spinner.show();
-			$.get("/fridge_point_click").done(function(result) 
+			$.get("/fridge_point_click").done(function(result)
 			{
 				result = JSON.parse(result)
 				if (result.error)
@@ -119,7 +129,7 @@ $(function()
 		}
 	})
 	
-	processStates(0);
+	processState(currentState);
 })
 
 var updateInProgress = false;
@@ -139,77 +149,12 @@ function getImage(imageIndex)
 	return images[imageIndex];
 }
 
-function appendStateData(stateDataList)
-{
-	if (stateDataList.states.length == 0)
-		return;
-	
-	$.each(stateDataList.states, function(index, stateData)
-	{
-		var stateData = new StateData(stateData)
-		doInsert = true;
-		index = receivedStates.length - 1;
-		while ((index >= 0) && (receivedStates[index].timeDiff(stateData) > 0))
-		{
-			index--;
-		}
-		while ((index >= 0) && (receivedStates[index].timeDiff(stateData) == 0))
-		{
-			if (receivedStates[index].equals(stateData))
-			{
-				doInsert = false;
-				break;
-			}
-		}
-		if (doInsert) //not a duplicate
-		{
-			receivedStates.splice(index + 1, 0, stateData);
-		}
-	})
-}
-
 var stateChangeTimer = null
 
 //this function waits the appropriate amount of time for a delayed state change
-function processStates(delaySeconds)
-{
-	if(receivedStates.length == 0)
-		return;
-	
-	//this is the current delayed time
-	adjustedTime = calculateDelayedTime(delaySeconds, offsetMilliseconds)
-	
-	var index = 0;
-	var nextStateChange = null;
-	while (index < receivedStates.length)
-	{
-		var stateTime = receivedStates[index].getChangeTime();
-		if (adjustedTime.diff(stateTime) < 0)
-		{
-			nextStateChange = receivedStates[index];
-			break;
-		}
-		index++;
-	}
-	
-	if (nextStateChange == null) //find that last state and set it to that
-	{
-		receivedStates[receivedStates.length - 1].apply()
-	}
-	else //we wait for the next state change
-	{
-		window.clearTimeout(stateChangeTimer)
-		stateChangeTimer = setTimeout(function() 
-		{ 
-			nextStateChange.apply();
-			processStates();
-		}, nextStateChange.getChangeTime().diff(adjustedTime))
-	}
-}
-
-function calculateDelayedTime(delaySeconds, offsetMilliseconds)
-{
-	return (moment().subtract(offsetMilliseconds).subtract(delaySeconds * 2 * 1000))
+function processState(state)
+{	
+	new StateData(state).apply();
 }
 
 function preload(arrayOfImages) {
@@ -219,31 +164,6 @@ function preload(arrayOfImages) {
 	});
 }
 
-function startListeningChannel(token)
-{
-	var channel = new goog.appengine.Channel(token);
-	var socket = channel.open();
-	socket.onopen = function() {  };
-	socket.onmessage = function(e) 
-	{
-		var data = JSON.parse(e.data);
-		appendStateData(data)
-		processStates();
-	};
-	socket.onerror = function(e) 
-	{
-		$.get("/request_new_channel").done(function(newChannelData)
-		{
-			newChannelData = JSON.parse(newChannelData);
-			setTimeout(function() {startListeningChannel(newChannelData.token) }, 5000)
-		})
-	}
-	socket.onclose = function(e) 
-	{ 
-		//alert('close!') 
-	};
-}
-
 function fridgeIsOpen()
 {
 	return (currentState == "fridgeStateOpen");
@@ -251,7 +171,7 @@ function fridgeIsOpen()
 
 function userLoggedIn()
 {
-	return (channelData != null)
+	return (loggedIn)
 }
 
 function GameSpinner(id)
