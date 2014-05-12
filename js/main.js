@@ -1,6 +1,7 @@
 var timer = null;
 var currentState = null;
 var receivedStates = [];
+var io = null;
 
 var IMAGE =
 	{
@@ -36,22 +37,31 @@ $(function()
 	{
 		endPoint = "dev/" + endPoint;
 	}
-	var socket = io.connect(updateURL + endPoint);
-	socket.on('connect', function()
+	
+	if (io) //we can't connect to our node :(
 	{
-		if (reconnect) //then we disconnected, get the latest state again and it's party time
+		var socket = io.connect(updateURL + endPoint);
+		socket.on('connect', function()
 		{
-		}
-	});
-	socket.on('new_states', function (data) 
-	{
-		processState(JSON.parse(data))
-	});
-	socket.on('disconnect', function()
-	{
-		reconnect = true;
-		new StateData({ "s" : 3, "type" : "fridge" }).apply();
-	});
+			if (reconnect) //then we disconnected, get the latest state again and it's party time
+			{
+				$.get("/current_state").done(function(data)
+				{
+					new StateData(JSON.parse(data)).apply()
+				})
+				reconnect = false;
+			}
+		});
+		socket.on('new_states', function (data) 
+		{
+			processState(JSON.parse(data))
+		});
+		socket.on('disconnect', function()
+		{
+			setFridgeStateUnknown();
+			reconnect = true;
+		});
+	}
 	
 	if (userLoggedIn())
 	{
@@ -132,18 +142,6 @@ $(function()
 	processState(currentState);
 })
 
-var updateInProgress = false;
-function updateFridgeStatus()
-{
-	$.get("/delayed_states").done(function(delayedStateSerialized) 
-	{
-		var delayedStateData = JSON.parse(delayedStateSerialized)
-		appendStateData(delayedStateData);
-	}).always(function() {
-		updateInProgress = false;
-	})
-}
-
 function getImage(imageIndex)
 {
 	return images[imageIndex];
@@ -167,6 +165,11 @@ function preload(arrayOfImages) {
 function fridgeIsOpen()
 {
 	return (currentState == "fridgeStateOpen");
+}
+
+function setFridgeStateUnknown()
+{
+	new StateData({ "s" : 3, "type" : "fridge" }).apply();
 }
 
 function userLoggedIn()
