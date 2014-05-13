@@ -10,10 +10,9 @@
 	<body>
 		<div id="fridgeStateContainer" class="unselectable">
 			<div id="lastOpenedTime" class="lastOpenedClockPosition digitalFont"><span id="lastOpenedText"></span></div>
-			<div id="lastOpenedOverlay" class="lastOpenedClockPosition"></div>
+			<div id="lastOpenedOverlay" class="lastOpenedClockPosition"></div><div id="lastOpenedToolTipText" style="display:none"></div>
+			
 			<div id="fridgeClickOverlay"></div>
-			<div id="fridgeClickToolTip" style="display:none"></div>
-
 			<div id="fridgeWhiteboard"></div>
 			<div id="fridgeClickVerifying" class="startHidden">
 
@@ -31,8 +30,8 @@
 		<script>
 			var serverDateFormat = 'YYYY-MM-DD HH:mm:ss.SSS Z'
 			var userURL = '{{user_url}}';
-			var loggedIn = '{{logged_in}}'
-			var points = {{points}}
+			var loggedIn = '{{logged_in}}' == 'True';
+			var fridgePoints = {{fridge_points}}
 			var currentState =({{!serialized_state}});
 		</script>
 

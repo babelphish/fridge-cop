@@ -44,7 +44,7 @@ def home():
                 return home_template.render(serialized_state = serialized_state,
                                             logged_in = logged_in,
                                             user_url = url,
-                                            points = points)
+                                            fridge_points = points)
         except Exception as e:
                 return str(e)
 

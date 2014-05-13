@@ -6,11 +6,12 @@ var io = null;
 var IMAGE =
 	{
 		FRIDGE_CLOSED: 0,
-		OPEN: 1,
-		FAST_POLLING: 2,
-		SLOW_POLLING: 3,
-		SUCCESS: 4,
-		FAILURE: 5
+		FRIDGE_OPEN: 1,
+		FRIDGE_UNKNOWN : 2,
+		FAST_POLLING: 3,
+		SLOW_POLLING: 4,
+		SUCCESS: 5,
+		FAILURE: 6
 	}
 
 var images = [
@@ -29,7 +30,6 @@ $(function()
 {	
 	preload(images);
 
-	var spinner = new GameSpinner("fridgeClickVerifying");
 	var endPoint = "state_changes";
 	var reconnect = false;
 	
@@ -63,15 +63,38 @@ $(function()
 		});
 	}
 	
+	//setup points
 	if (userLoggedIn())
-	{
-		$("#fridgeWhiteboard").text(points)
+	{	
+		displayWhiteBoardPoints();
+		var logoutContent = '<span class="accessText">Log Out</span>';
+		$("#fridgeWhiteboard").on('mouseenter',  function() { $(this).html(logoutContent) })
+							  .on('mouseleave',  function() { displayWhiteBoardPoints() })
 	}
 	else
 	{
-		$("#fridgeWhiteboard").text("Log in")
+		var loginContent = '<span class="accessText">Log In</span>'; 
+		$("#fridgeWhiteboard").html(loginContent); //default blank
 	}
 	
+	attachEvents();
+	
+	processState(currentState);
+})
+
+function displayWhiteBoardPoints()
+{
+	var pointsContent = function() { return '<span class="pointsText">' + fridgePoints + '</span>'};
+	$("#fridgeWhiteboard").html(pointsContent())
+};
+
+function attachEvents()
+{
+	$("#fridgeWhiteboard").on('click', function() { window.location = userURL  });
+
+
+	var spinner = new GameSpinner("fridgeClickVerifying");
+
 	$("#fridgeClickOverlay").on("click", function()
 	{
 		if (userLoggedIn() && fridgeIsOpen())
@@ -92,7 +115,8 @@ $(function()
 				{
 					spinner.setText("+1 FRIDGE POINTS YEAHHHH");
 					spinner.setImage(IMAGE.SUCCESS);
-					$("#fridgeWhiteboard").text(result.points);
+					fridgePoints = result.points;
+					displayWhiteBoardPoints();
 				}
 			}).fail(function()
 			{
@@ -113,7 +137,7 @@ $(function()
 		},
 		content: 
 		{
-            text: "This is the last time the fridge was open."
+            text: $("#lastOpenedToolTipText")
         },
 		position: 
 		{
@@ -121,26 +145,7 @@ $(function()
 			at: "center right"
 		}
 	});
-	
-	$("#fridgeClickOverlay").qtip({
-		style: 
-		{
-			classes: 'qtip-bootstrap',
-			width: 150
-		},
-		content:
-		{
-            text: $("#fridgeClickToolTip")
-        },
-		position: 
-		{
-			my: "center left",
-			at: "center right"
-		}
-	})
-	
-	processState(currentState);
-})
+}
 
 function getImage(imageIndex)
 {
@@ -286,32 +291,17 @@ function StateData(stateData)
 			}
 			
 			if (newState != currentState)
-			{
-				if (newState == 'fridgeStateOpen')
-				{
-					if (userLoggedIn())
-					{
-						$("#fridgeClickToolTip").text("It's open! Click it for sweet fridge points!")
-					}
-					else
-					{
-						$("#fridgeClickToolTip").text("My fridge is open, but you aren't logged in.  Log in to earn fridge points.");
-					}
-				}
-				else
-				{
-					$("#fridgeClickToolTip").html('My fridge.  Right now it\'s <span style="font-weight: bold">closed</span>.');
-				}
-			
+			{			
 				$("#fridgeStateContainer").removeClass(currentState).addClass(newState);
 				currentState = newState;
-
+				
 				updateLastOpenedTime(that.getChangeTime())
 			}
 		}
 		
 		function updateLastOpenedTime(lastOpenedDate)
 		{
+			$("#lastOpenedToolTipText").html("Last opened <br><span class='toolTipTime'>" + lastOpenedDate.format("h:mm:ss A") + "</span>");
 			$("#lastOpenedText").text(lastOpenedDate.format("hh:mm")).attr("title", lastOpenedDate.toString());
 		}
 	}
