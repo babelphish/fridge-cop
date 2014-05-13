@@ -1,47 +1,100 @@
 var timer = null;
 var currentState = null;
 var receivedStates = [];
+var io = null;
 
 var IMAGE =
 	{
 		FRIDGE_CLOSED: 0,
-		OPEN: 1,
-		FAST_POLLING: 2,
-		SLOW_POLLING: 3,
-		SUCCESS: 4,
-		FAILURE: 5
+		FRIDGE_OPEN: 1,
+		FRIDGE_UNKNOWN : 2,
+		FAST_POLLING: 3,
+		SLOW_POLLING: 4,
+		SUCCESS: 5,
+		FAILURE: 6
 	}
 
 var images = [
 		'/images/fridge_closed2.png',
 		'/images/fridge_open2.png',
+		'/images/fridge_unknown.png',
 		'/images/rabbit.png',
 		'/images/snail.png',
 		'/images/success.png',
 		'/images/failure.png'
 	]
 
+var updateURL = 'http://node.fridge-cop.com/';
+	
 $(function()
 {	
 	preload(images);
-	
-	var spinner = new GameSpinner("fridgeClickVerifying")
-	
-	if (channelData) //then it's channel time baby
-	{
-		startListeningChannel(channelData.token);
-	}
-	else //start polling
-	{
-		updateFridgeStatus(); //do initial update
-		timer = setInterval(updateFridgeStatus, delaySeconds * 1000); //start polling
-	}
 
-	if (userLoggedIn())
+	var endPoint = "state_changes";
+	var reconnect = false;
+	
+	if (document.location.hostname == "localhost")
 	{
-		$("#fridgeWhiteboard").show()
+		endPoint = "dev/" + endPoint;
 	}
 	
+	if (io) //we can't connect to our node :(
+	{
+		var socket = io.connect(updateURL + endPoint);
+		socket.on('connect', function()
+		{
+			if (reconnect) //then we disconnected, get the latest state again and it's party time
+			{
+				$.get("/current_state").done(function(data)
+				{
+					new StateData(JSON.parse(data)).apply()
+				})
+				reconnect = false;
+			}
+		});
+		socket.on('new_states', function (data) 
+		{
+			processState(JSON.parse(data))
+		});
+		socket.on('disconnect', function()
+		{
+			setFridgeStateUnknown();
+			reconnect = true;
+		});
+	}
+	
+	//setup points
+	if (userLoggedIn())
+	{	
+		displayWhiteBoardPoints();
+		var logoutContent = '<span class="accessText">Log Out</span>';
+		$("#fridgeWhiteboard").on('mouseenter',  function() { $(this).html(logoutContent) })
+							  .on('mouseleave',  function() { displayWhiteBoardPoints() })
+	}
+	else
+	{
+		var loginContent = '<span class="accessText">Log In</span>'; 
+		$("#fridgeWhiteboard").html(loginContent); //default blank
+	}
+	
+	attachEvents();
+	
+	processState(currentState);
+})
+
+function displayWhiteBoardPoints()
+{
+	var pointsContent = function() { return '<span class="pointsText">' + fridgePoints + '</span>'};
+	$("#fridgeWhiteboard").html(pointsContent())
+};
+
+function attachEvents()
+{
+	$("#fridgeWhiteboard").on('click', function() { window.location = userURL  });
+
+
+	var spinner = new GameSpinner("fridgeClickVerifying");
+
 	$("#fridgeClickOverlay").on("click", function()
 	{
 		if (userLoggedIn() && fridgeIsOpen())
@@ -50,7 +103,7 @@ $(function()
 			spinner.setImage(IMAGE.FRIDGE_CLOSED);
 			spinner.spin();
 			spinner.show();
-			$.get("/fridge_point_click").done(function(result) 
+			$.get("/fridge_point_click").done(function(result)
 			{
 				result = JSON.parse(result)
 				if (result.error)
@@ -62,7 +115,8 @@ $(function()
 				{
 					spinner.setText("+1 FRIDGE POINTS YEAHHHH");
 					spinner.setImage(IMAGE.SUCCESS);
-					$("#fridgeWhiteboard").text(result.points);
+					fridgePoints = result.points;
+					displayWhiteBoardPoints();
 				}
 			}).fail(function()
 			{
@@ -83,7 +137,7 @@ $(function()
 		},
 		content: 
 		{
-            text: "This is the last time the fridge was open."
+            text: $("#lastOpenedToolTipText")
         },
 		position: 
 		{
@@ -91,36 +145,6 @@ $(function()
 			at: "center right"
 		}
 	});
-	
-	$("#fridgeClickOverlay").qtip({
-		style: 
-		{
-			classes: 'qtip-bootstrap',
-			width: 150
-		},
-		content:
-		{
-            text: $("#fridgeClickToolTip")
-        },
-		position: 
-		{
-			my: "center left",
-			at: "center right"
-		}
-	})
-	
-})
-
-var updateInProgress = false;
-function updateFridgeStatus()
-{
-	$.get("/delayed_states").done(function(delayedStateSerialized) 
-	{
-		var delayedStateData = JSON.parse(delayedStateSerialized)
-		appendStateData(delayedStateData);
-	}).always(function() {
-		updateInProgress = false;
-	})
 }
 
 function getImage(imageIndex)
@@ -128,79 +152,12 @@ function getImage(imageIndex)
 	return images[imageIndex];
 }
 
-function appendStateData(stateDataList)
-{
-	if (stateDataList.states.length == 0)
-		return;
-	
-	$.each(stateDataList.states, function(index, stateData)
-	{
-		var stateData = new StateData(stateData)
-		doInsert = true;
-		index = receivedStates.length - 1;
-		while ((index >= 0) && (receivedStates[index].timeDiff(stateData) > 0))
-		{
-			index--;
-		}
-		while ((index >= 0) && (receivedStates[index].timeDiff(stateData) == 0))
-		{
-			if (receivedStates[index].equals(stateData))
-			{
-				doInsert = false;
-				break;
-			}
-		}
-		if (doInsert) //not a duplicate
-		{
-			receivedStates.splice(index + 1, 0, stateData);
-		}
-	})
-	
-	processStates()
-}
-
 var stateChangeTimer = null
 
 //this function waits the appropriate amount of time for a delayed state change
-function processStates()
-{
-	if(receivedStates.length == 0)
-		return;
-	
-	//this is the current delayed time
-	adjustedTime = calculateDelayedTime(delaySeconds, offsetMilliseconds)
-	
-	var index = 0;
-	var nextStateChange = null;
-	while (index < receivedStates.length)
-	{
-		var stateTime = receivedStates[index].getChangeTime();
-		if (adjustedTime.diff(stateTime) < 0)
-		{
-			nextStateChange = receivedStates[index];
-			break;
-		}
-		index++;
-	}
-	
-	if (nextStateChange == null) //find that last state and set it to that
-	{
-		receivedStates[receivedStates.length - 1].apply()
-	}
-	else //we wait for the next state change
-	{
-		window.clearTimeout(stateChangeTimer)
-		stateChangeTimer = setTimeout(function() 
-		{ 
-			nextStateChange.apply();
-			processStates();
-		}, nextStateChange.getChangeTime().diff(adjustedTime))
-	}
-}
-
-function calculateDelayedTime(delaySeconds, offsetMilliseconds)
-{
-	return (moment().subtract(offsetMilliseconds).subtract(delaySeconds * 2 * 1000))
+function processState(state)
+{	
+	new StateData(state).apply();
 }
 
 function preload(arrayOfImages) {
@@ -210,39 +167,19 @@ function preload(arrayOfImages) {
 	});
 }
 
-function startListeningChannel(token)
-{
-	var channel = new goog.appengine.Channel(token);
-	var socket = channel.open();
-	socket.onopen = function() {  };
-	socket.onmessage = function(e) 
-	{
-		var data = JSON.parse(e.data);
-		appendStateData(data)
-		processStates();
-	};
-	socket.onerror = function(e) 
-	{
-		$.get("/request_new_channel").done(function(newChannelData)
-		{
-			newChannelData = JSON.parse(newChannelData);
-			setTimeout(function() {startListeningChannel(newChannelData.token) }, 5000)
-		})
-	}
-	socket.onclose = function(e) 
-	{ 
-		//alert('close!') 
-	};
-}
-
 function fridgeIsOpen()
 {
 	return (currentState == "fridgeStateOpen");
 }
 
+function setFridgeStateUnknown()
+{
+	new StateData({ "s" : 3, "type" : "fridge" }).apply();
+}
+
 function userLoggedIn()
 {
-	return (channelData != null)
+	return (loggedIn)
 }
 
 function GameSpinner(id)
@@ -354,32 +291,17 @@ function StateData(stateData)
 			}
 			
 			if (newState != currentState)
-			{
-				if (newState == 'fridgeStateOpen')
-				{
-					if (userLoggedIn())
-					{
-						$("#fridgeClickToolTip").text("It's open! Click it for sweet fridge points!")
-					}
-					else
-					{
-						$("#fridgeClickToolTip").text("My fridge is open, but you aren't logged in.  Log in to earn fridge points.");
-					}
-				}
-				else
-				{
-					$("#fridgeClickToolTip").html('My fridge.  Right now it\'s <span style="font-weight: bold">closed</span>.');
-				}
-			
+			{			
 				$("#fridgeStateContainer").removeClass(currentState).addClass(newState);
 				currentState = newState;
-
+				
 				updateLastOpenedTime(that.getChangeTime())
 			}
 		}
 		
 		function updateLastOpenedTime(lastOpenedDate)
 		{
+			$("#lastOpenedToolTipText").html("Last opened <br><span class='toolTipTime'>" + lastOpenedDate.format("h:mm:ss A") + "</span>");
 			$("#lastOpenedText").text(lastOpenedDate.format("hh:mm")).attr("title", lastOpenedDate.toString());
 		}
 	}
