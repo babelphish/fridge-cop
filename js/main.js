@@ -90,9 +90,6 @@ function displayWhiteBoardPoints()
 
 function attachEvents()
 {
-	$("#fridgeWhiteboard").on('click', function() { window.location = userURL  });
-
-
 	var spinner = new GameSpinner("fridgeClickVerifying");
 
 	$("#fridgeClickOverlay").on("click", function()

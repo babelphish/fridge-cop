@@ -194,6 +194,12 @@ table {
 	font-family: digital
 }
 
+#whiteboardLink
+{
+	color: inherit;
+	text-decoration: none;
+}
+
 #fridgeWhiteboard
 {
 	display: block;

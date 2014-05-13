@@ -13,7 +13,7 @@
 			<div id="lastOpenedOverlay" class="lastOpenedClockPosition"></div><div id="lastOpenedToolTipText" style="display:none"></div>
 			
 			<div id="fridgeClickOverlay"></div>
-			<div id="fridgeWhiteboard"></div>
+			<a href="{{user_url}}" id="whiteboardLink"><div id="fridgeWhiteboard"></div></a>
 			<div id="fridgeClickVerifying" class="startHidden">
 
 			</div>
@@ -29,7 +29,6 @@
 
 		<script>
 			var serverDateFormat = 'YYYY-MM-DD HH:mm:ss.SSS Z'
-			var userURL = '{{user_url}}';
 			var loggedIn = '{{logged_in}}' == 'True';
 			var fridgePoints = {{fridge_points}}
 			var currentState =({{!serialized_state}});
