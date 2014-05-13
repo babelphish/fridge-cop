@@ -3,7 +3,7 @@
 	<head>
 		<meta name="viewport" content="width=device-width, initial-scale=1" >
 		<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/qtip2/2.2.0/jquery.qtip.min.css"></link>
-		<link rel="stylesheet" type="text/css" href="./css/main.css"></link>
+		<link rel="stylesheet" type="text/css" href="./css/main.css?version=5"></link>
 		<title>Fridge Cop</title>
 	</head>
 
@@ -23,9 +23,9 @@
 		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/json2/20130526/json2.min.js"></script>
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 		<script src="/js/moment.min.js"></script>
-		<script src="/js/main.js"></script>
-		<script src="//cdn.jsdelivr.net/qtip2/2.2.0/jquery.qtip.min.js"></script>
-		<script src="http://node.fridge-cop.com/socket.io/socket.io.js"></script>
+		<script src="/js/main.js?version=5"></script>
+		<script src="//cdn.jsdelivr.net/qtip2/2.2.0/jquery.qtip.min.js?version=5"></script>
+		<script src="http://node.fridge-cop.com/socket.io/socket.io.js?version=5"></script>
 
 		<script>
 			var serverDateFormat = 'YYYY-MM-DD HH:mm:ss.SSS Z'
