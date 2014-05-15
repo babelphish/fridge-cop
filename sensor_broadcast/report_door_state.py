@@ -5,7 +5,7 @@ import datetime
 import requests
 import ConfigParser
 
-change_url = 'http://fridge-cop.appspot.com/change_state?new_state={0}state_change_key={1}'
+change_url = 'http://fridge-cop.appspot.com/change_state?new_state={0}&state_update_key={1}'
 current_state = None
 
 config = ConfigParser.ConfigParser()
