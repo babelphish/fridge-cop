@@ -4,6 +4,7 @@ from fridge_model import FridgeDoorState
 from fridge_door import FridgeDoor
 from google.appengine.ext import ndb
 from datetime import timedelta
+import ConfigParser
 import logging
 import datetime
 import json
@@ -25,6 +26,12 @@ fridge_last_opened_cache_key = "fridgeLastOpened"
 door_ancestor_key = ndb.Key("FridgeDoor", "main")
 date_1970 = datetime.datetime.utcfromtimestamp(0)
 node_url = "http://node.fridge-cop.com/"
+
+
+config = ConfigParser.ConfigParser()
+config.read("secure_keys.ini")
+state_update_key = config.get("secure_keys", "state_update_key")
+
 
 @bottle.route('/')
 def home():
@@ -51,6 +58,11 @@ def home():
 @bottle.route('/change_state')
 def change_state():
         try:
+                new_state = int(request.query.new_state)
+                key = request.query.state_update_key
+                if (key != state_update_key): #key has to match
+                        return json.dumps({ "error" : True, "message" : "Invalid Key"})
+
                 new_state = int(request.query.new_state)
 
                 set_state_success = set_current_state(new_state)
