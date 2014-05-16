@@ -3,30 +3,26 @@
 	<head>
 		<meta name="viewport" content="width=device-width, initial-scale=1" >
 		<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/qtip2/2.2.0/jquery.qtip.min.css"></link>
-		<link rel="stylesheet" type="text/css" href="./css/main.css"></link>
-		<link rel="stylesheet" type="text/css" href="/css/timeline.css">
-		
+		<link rel="stylesheet" type="text/css" href="/css/timeline.css">		
+		<link rel="stylesheet" type="text/css" href="./css/main.css?version=5"></link>
 		<title>Fridge Cop</title>
 	</head>
 
 	<body>
-		<div id="fridgeStateContainer" class="fridgeStateUnknown unselectable">
+		<div id="fridgeStateContainer" class="unselectable">
 			<div id="lastOpenedTime" class="lastOpenedClockPosition digitalFont"><span id="lastOpenedText"></span></div>
-			<div id="lastOpenedOverlay" class="lastOpenedClockPosition"></div>
+			<div id="lastOpenedOverlay" class="lastOpenedClockPosition"></div><div id="lastOpenedToolTipText" style="display:none"></div>
+			
 			<div id="fridgeClickOverlay"></div>
-			<div id="fridgeClickToolTip" style="display:none"></div>
-
-			<a id="pollingSpeed" href="{{user_url}}"  class="{{polling_state}}"></a>
-			<div id="fridgeWhiteboard" class="startHidden">{{points}}</div>
+			<div id="fridgeWhiteboard"><a href="{{user_url}}" id="whiteboardLink"></a></div>
 			<div id="fridgeClickVerifying" class="startHidden">
-
+			
 			</div>
 			<div id="statPopup"></div>
 		</div>
 		
 		<div id="mytimeline"></div>
 
-		<script type="text/javascript" src="/_ah/channel/jsapi"></script>
 		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/json2/20130526/json2.min.js"></script>
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 		<script src="/js/moment.min.js"></script>
@@ -34,16 +30,14 @@
 		<script src="//cdn.jsdelivr.net/qtip2/2.2.0/jquery.qtip.min.js"></script>
 		<script type="text/javascript" src="http://www.google.com/jsapi"></script>
 		<script type="text/javascript" src="/js/timeline.js"></script>
+		<script src="//node.fridge-cop.com/socket.io/socket.io.js?version=5"></script>
 
 		<script>
 			var serverDateFormat = 'YYYY-MM-DD HH:mm:ss.SSS Z'
-			var userURL = '{{user_url}}';
-			var serverTime = moment('{{server_time}}', serverDateFormat);
-			var delaySeconds = {{ delay_seconds }};
-			var channelData = {{!channel_data}};
-			var offsetMilliseconds = moment().diff(serverTime);
-			appendStateData({{!serialized_states}});
-			
+			var loggedIn = '{{logged_in}}' == 'True';
+			var fridgePoints = {{fridge_points}}
+			var currentState =({{!serialized_state}});
+
 			function drawVisualization() 
 			{
 				// Create and populate a data table.
@@ -82,7 +76,7 @@
 				timeline.draw(data, options);
 			}
 			
-			 google.load("visualization", "1");
+			 //google.load("visualization", "1");
 
 			// Set callback to run when API is loaded
 			google.setOnLoadCallback(drawVisualization);
