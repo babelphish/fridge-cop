@@ -198,6 +198,8 @@ table {
 {
 	color: inherit;
 	text-decoration: none;
+	display: inline-block;
+	width: 100%;
 }
 
 #fridgeWhiteboard

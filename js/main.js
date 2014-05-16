@@ -68,13 +68,13 @@ $(function()
 	{	
 		displayWhiteBoardPoints();
 		var logoutContent = '<span class="accessText">Log Out</span>';
-		$("#fridgeWhiteboard").on('mouseenter',  function() { $(this).html(logoutContent) })
+		$("#fridgeWhiteboard").on('mouseenter',  function() { $("#whiteboardLink").html(logoutContent) })
 							  .on('mouseleave',  function() { displayWhiteBoardPoints() })
 	}
 	else
 	{
 		var loginContent = '<span class="accessText">Log In</span>'; 
-		$("#fridgeWhiteboard").html(loginContent); //default blank
+		$("#whiteboardLink").html(loginContent); //default blank
 	}
 	
 	attachEvents();
@@ -85,7 +85,7 @@ $(function()
 function displayWhiteBoardPoints()
 {
 	var pointsContent = function() { return '<span class="pointsText">' + fridgePoints + '</span>'};
-	$("#fridgeWhiteboard").html(pointsContent())
+	$("#whiteboardLink").html(pointsContent())
 };
 
 function attachEvents()

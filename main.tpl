@@ -13,9 +13,9 @@
 			<div id="lastOpenedOverlay" class="lastOpenedClockPosition"></div><div id="lastOpenedToolTipText" style="display:none"></div>
 			
 			<div id="fridgeClickOverlay"></div>
-			<a href="{{user_url}}" id="whiteboardLink"><div id="fridgeWhiteboard"></div></a>
+			<div id="fridgeWhiteboard"><a href="{{user_url}}" id="whiteboardLink"></a></div>
 			<div id="fridgeClickVerifying" class="startHidden">
-
+			
 			</div>
 		</div>
 
