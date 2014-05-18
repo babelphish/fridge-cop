@@ -80,8 +80,8 @@ def development():
 #get the correct delayed state
 @bottle.route('/timeline_states')
 def get_serialized_timeline_states():
-        timeline_start_date = datetime.datetime.now() - datetime.timedelta(days = 48)
-        states = FridgeDoorState.query(ancestor = door_ancestor_key, filters = FridgeDoorState.change_time < timeline_start_date).fetch()
+        timeline_start_date = datetime.datetime.now() - datetime.timedelta(days = 1)
+        states = FridgeDoorState.query(ancestor = door_ancestor_key, filters = FridgeDoorState.change_time > timeline_start_date).fetch()
         state_list = []
         for state in states:
                 state_list.append(fridge_state(state))

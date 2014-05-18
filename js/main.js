@@ -138,7 +138,7 @@ function attachEvents()
 		  {
 			open : function() 
 			{
-				drawTimeline();
+				redrawTimeline();
 			}  
 		  }
 	})
@@ -161,43 +161,114 @@ function attachEvents()
 	});
 }
 
-function drawTimeline() 
+timelineRequests = {};
+var requestIndex = 0;
+
+function redrawTimeline() 
 {
-	// Create and populate a data table.
-	var data = new google.visualization.DataTable();
-	data.addColumn('datetime', 'start');
-	data.addColumn('datetime', 'end');
-	data.addColumn('string', 'content');
+	$.each(timelineRequests, function(index, request) 
+	{
+		request.abort();
+	})
 
-	data.addRows(
-	[
-		[new Date(2010,7,23), , 'Conversation<br>' +
-				'<img src="img/comments-icon.png" style="width:32px; height:32px;">'],
-		[new Date(2010,7,23,23,0,0), , 'Mail from boss<br>' +
-				'<img src="img/mail-icon.png" style="width:32px; height:32px;">'],
-		[new Date(2010,7,24,16,0,0), , 'Report'],
-		[new Date(2010,7,26), new Date(2010,8,2), 'Traject A'],
-		[new Date(2010,7,28), , 'Memo<br>' +
-				'<img src="img/notes-edit-icon.png" style="width:48px; height:48px;">'],
-		[new Date(2010,7,29), , 'Phone call<br>' +
-				'<img src="img/Hardware-Mobile-Phone-icon.png" style="width:32px; height:32px;">'],
-		[new Date(2010,7,31), new Date(2010,8,3), 'Traject B'],
-		[new Date(2010,8,4,12,0,0), , 'Report<br>' +
-				'<img src="img/attachment-icon.png" style="width:32px; height:32px;">']
-	]);
+	$("#timeline").html("Loading...");
 
-	// specify options
-	var options = {
-		"width":  "100%",
-		"height": "100%",
-		"style": "box"
-	};
 
-	// Instantiate our timeline object.
-	timeline = new links.Timeline(document.getElementById('timeline'));
+	requestIndex++;
 
-	// Draw our timeline with the created data and options
-	timeline.draw(data, options);
+	makeRequest(requestIndex);
+	
+	function makeRequest(requestIndex)
+	{
+	
+		timelineRequests[requestIndex] = 
+		$.get("/timeline_states")
+		.done(
+			function(timelineStates)
+			{
+				renderTimeline(JSON.parse(timelineStates));
+			})
+		.always(
+			function()
+			{
+				delete timelineRequests[requestIndex]
+			})
+	}
+	
+	function renderTimeline(timelineStates)
+	{
+		// Create and populate a data table.
+		var data = new google.visualization.DataTable();
+		data.addColumn('datetime', 'start');
+		data.addColumn('datetime', 'end');
+		data.addColumn('string', 'content');
+		
+		//construct timeline
+		
+		var lookingForFridgeState = 1;
+		
+		var statePair = {};
+
+		$.each(timelineStates, function(index, state)
+		{
+			var state = new StateData(state);
+			var content = null;
+			if (state.getState() == 1)
+			{
+				content = '<img src="images/fridge_open2.png" class="timelineImage">'
+			}
+			else if (state.getState() == 2)
+			{
+				content = '<img src="images/fridge_closed2.png" class="timelineImage">'			
+			}
+			else if (state.getState() == 3)
+			{
+				content = '<img src="images/fridge_unknown.png" class="timelineImage">'
+			}
+			if (content)
+			{
+				data.addRow([state.getChangeTime().toDate(), , content]);
+			}
+		})
+		
+		$.each(timelineStates, function(index, state)
+		{
+			var state = new StateData(state);
+			if (state.isFridgeData())
+			{
+				if (!statePair.startState)
+				{
+					if (state.getState() == 1)
+					{
+						statePair.startState = state;
+					}
+				}
+				else //we do have a start state, now we need an end state
+				{
+					if (state.getState() == 2)
+					{
+						//add the timeline elements
+						data.addRow([statePair.startState.getChangeTime().toDate(),state.getChangeTime().toDate(), ""]);
+
+						statePair = {};
+					}
+				}
+			}
+		});
+
+		// Instantiate our timeline object.
+		timeline = new links.Timeline(document.getElementById('timeline'));
+
+		// specify options
+		var options = {
+			"width":  "100%",
+			"height": "100%",
+			"style": "box"
+		};
+		
+		// Draw our timeline with the created data and options
+		timeline.draw(data, options);
+	}
 }
 
 function getImage(imageIndex)

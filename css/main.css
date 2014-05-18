@@ -284,7 +284,7 @@ table {
 	position: relative;
 	z-index: 20;
 	padding: 0.5em;
-	top: 10px;
+	top: -60px;
 	cursor: pointer;
 }
 
@@ -357,6 +357,12 @@ table {
 	position: relative;
 	height: 400px;
 	width: 900px;
+}
+
+.timelineImage
+{
+	width: 48px;
+	height: 48px;
 }
 
 html, body
