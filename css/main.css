@@ -200,19 +200,20 @@ table {
 	text-decoration: none;
 	display: inline-block;
 	width: 100%;
+	height: 100%; //otherwise we get glitchy hover
 }
 
 #fridgeWhiteboard
 {
 	display: block;
-	width: 70px;
-	height: 60px;
+	width: 80px;
+	height: 80px;
 	text-align: center;
 	font-family: marker;
-	background: url("../images/whiteboard.png") no-repeat center;
-	background-size: 100% 100%;
+	background: url("../images/whiteboard2.png") no-repeat center;
+	background-size: contain;
 	z-index: 10;
-	top: 275px;
+	top: 265px;
 	position: relative;
 	margin-left: auto;
 	margin-right: auto;
@@ -220,18 +221,20 @@ table {
 	cursor: pointer;
 }
 
+.whiteboardText
+{
+	vertical-align: middle;
+	line-height: 85px;
+}
+
 .pointsText
 {
 	font-size: 2.5em;
-	vertical-align: middle;
-	line-height: 65px;
 }
 
 .accessText
 {
 	font-size: 1.25em;
-	vertical-align: middle;
-	line-height: 65px;
 }
 
 @-webkit-keyframes spin
@@ -322,6 +325,38 @@ table {
 .toolTipTime
 {
 	font-weight: bold;
+}
+
+#statPopupButton
+{
+	height: 50px;
+	width: 50px;
+	background: url("../images/chart.png") no-repeat center;
+	position: relative;
+	top: 200px;
+	margin-left: auto;
+	margin-right: auto;
+	right: 62px;
+	background-size: contain;
+	cursor: pointer;
+}
+
+.white-popup 
+{
+  position: relative;
+  background: #FFF;
+  padding: 20px;
+  width: auto;
+  max-width: 900px;
+  height: 400px;
+  margin: 20px auto;
+}
+
+#timeline 
+{
+	position: relative;
+	height: 400px;
+	width: 900px;
 }
 
 html, body

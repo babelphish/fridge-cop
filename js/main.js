@@ -1,7 +1,8 @@
+google.load("visualization", "1"); //loads visualization
+			
 var timer = null;
 var currentState = null;
 var receivedStates = [];
-var io = null;
 
 var IMAGE =
 	{
@@ -25,9 +26,9 @@ var images = [
 	]
 
 var updateURL = 'http://node.fridge-cop.com/';
-	
+
 $(function()
-{	
+{
 	preload(images);
 
 	var endPoint = "state_changes";
@@ -38,7 +39,7 @@ $(function()
 		endPoint = "dev/" + endPoint;
 	}
 	
-	if (io) //we can't connect to our node :(
+	if (window.io && io) //otherwise we can't connect to our node :(
 	{
 		var socket = io.connect(updateURL + endPoint);
 		socket.on('connect', function()
@@ -78,7 +79,7 @@ $(function()
 	}
 	
 	attachEvents();
-	
+		
 	processState(currentState);
 })
 
@@ -126,6 +127,22 @@ function attachEvents()
 		}
 	})
 	
+	$("#statPopupButton").magnificPopup(
+	{
+		  items:
+		  {
+			src: "#statsPopup", // can be a HTML string, jQuery object, or CSS selector
+			type: 'inline'
+		  },
+		  callbacks:
+		  {
+			open : function() 
+			{
+				drawTimeline();
+			}  
+		  }
+	})
+	
 	$("#lastOpenedOverlay").qtip({
 		style: 
 		{
@@ -142,6 +159,45 @@ function attachEvents()
 			at: "center right"
 		}
 	});
+}
+
+function drawTimeline() 
+{
+	// Create and populate a data table.
+	var data = new google.visualization.DataTable();
+	data.addColumn('datetime', 'start');
+	data.addColumn('datetime', 'end');
+	data.addColumn('string', 'content');
+
+	data.addRows(
+	[
+		[new Date(2010,7,23), , 'Conversation<br>' +
+				'<img src="img/comments-icon.png" style="width:32px; height:32px;">'],
+		[new Date(2010,7,23,23,0,0), , 'Mail from boss<br>' +
+				'<img src="img/mail-icon.png" style="width:32px; height:32px;">'],
+		[new Date(2010,7,24,16,0,0), , 'Report'],
+		[new Date(2010,7,26), new Date(2010,8,2), 'Traject A'],
+		[new Date(2010,7,28), , 'Memo<br>' +
+				'<img src="img/notes-edit-icon.png" style="width:48px; height:48px;">'],
+		[new Date(2010,7,29), , 'Phone call<br>' +
+				'<img src="img/Hardware-Mobile-Phone-icon.png" style="width:32px; height:32px;">'],
+		[new Date(2010,7,31), new Date(2010,8,3), 'Traject B'],
+		[new Date(2010,8,4,12,0,0), , 'Report<br>' +
+				'<img src="img/attachment-icon.png" style="width:32px; height:32px;">']
+	]);
+
+	// specify options
+	var options = {
+		"width":  "100%",
+		"height": "100%",
+		"style": "box"
+	};
+
+	// Instantiate our timeline object.
+	timeline = new links.Timeline(document.getElementById('timeline'));
+
+	// Draw our timeline with the created data and options
+	timeline.draw(data, options);
 }
 
 function getImage(imageIndex)

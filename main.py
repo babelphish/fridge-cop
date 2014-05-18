@@ -64,7 +64,7 @@ def change_state():
                         return json.dumps({ "error" : True, "message" : "Invalid Key"})
 
                 new_state = int(request.query.new_state)
-
+ 
                 set_state_success = set_current_state(new_state)
                 if (set_state_success):
                         current_state = get_serialized_current_state()
@@ -76,6 +76,17 @@ def change_state():
 
 def development():
         return os.environ['SERVER_SOFTWARE'].startswith('Development')
+
+#get the correct delayed state
+@bottle.route('/timeline_states')
+def get_serialized_timeline_states():
+        timeline_start_date = datetime.datetime.now() - datetime.timedelta(days = 48)
+        states = FridgeDoorState.query(ancestor = door_ancestor_key, filters = FridgeDoorState.change_time < timeline_start_date).fetch()
+        state_list = []
+        for state in states:
+                state_list.append(fridge_state(state))
+
+        return json.dumps(state_list)
 
 def broadcast_state(message):
         final_url = node_url
@@ -95,7 +106,7 @@ def broadcast_state(message):
                         payload=form_data,
                         method=urlfetch.POST,
                         headers={'Content-Type': 'application/x-www-form-urlencoded'})
-                return "broadcast"
+                return message
         except Exception as e:
                 return str(e)
 
@@ -174,16 +185,16 @@ def get_user_points(user):
 @bottle.route('/current_state')
 def get_serialized_current_state():
         current_state = get_current_fridge_entity()
-        return serialized_state(current_state)
+        return json.dumps(fridge_state(current_state))
 
-def serialized_state(state):
+def fridge_state(state):
         found_state = {
                 "s" : str(state.state),
                 "t" : str(state.change_time),
                 "ls" : str(state.last_state),
                 "type" : "fridge"
         }
-        return json.dumps(found_state)
+        return found_state
 
 def get_current_fridge_entity():
         door_entity = FridgeDoorState.get_by_id(parent = door_ancestor_key, id = 'current')
@@ -193,7 +204,6 @@ def get_current_fridge_entity():
                 door_entity.change_time = datetime.datetime.now()
 
         return door_entity
-
 
 @bottle.route('/admin/test')
 def home():
