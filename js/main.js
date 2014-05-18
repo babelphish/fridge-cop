@@ -217,10 +217,6 @@ function redrawTimeline()
 			{
 				content = '<img src="images/fridge_open2.png" class="timelineImage">'
 			}
-			else if (state.getState() == 2)
-			{
-				content = '<img src="images/fridge_closed2.png" class="timelineImage">'			
-			}
 			else if (state.getState() == 3)
 			{
 				content = '<img src="images/fridge_unknown.png" class="timelineImage">'
