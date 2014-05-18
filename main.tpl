@@ -30,7 +30,7 @@
 		<script type="text/javascript" src="/js/moment.min.js"></script>
 		<script type="text/javascript" src="//cdn.jsdelivr.net/qtip2/2.2.0/jquery.qtip.min.js"></script>
 		<script type="text/javascript" src="//www.google.com/jsapi"></script>
-		<script type="text/javascript" src="/js/timeline.js"></script>
+		<script type="text/javascript" src="/js/timeline-min.js"></script>
 		<script src="//node.fridge-cop.com/socket.io/socket.io.js"></script>
 		<script type="text/javascript" src="/js/magnific.js"></script>
 		<script type="text/javascript" src="/js/main.js"></script>
