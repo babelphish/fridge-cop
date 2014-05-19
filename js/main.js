@@ -234,7 +234,13 @@ function redrawTimeline()
 						//add the timeline elements
 
 						var seconds = state.getChangeTime().diff(statePair.startState.getChangeTime(), "seconds");
-						data.addRow([statePair.startState.getChangeTime().toDate(), , seconds + "s", "box", "Fridge Open"]);
+						var eventText = seconds + " sec"
+						if (seconds > 60)
+						{
+							eventText = parseInt(seconds / 60) + " min"
+						}
+						
+						data.addRow([statePair.startState.getChangeTime().toDate(), , eventText, "box", "Fridge Open"]);
 						statePair = {};  //clear out pair
 					}
 				}
@@ -250,7 +256,7 @@ function redrawTimeline()
 
 		var startDay = start.clone().hour(0).minute(0).second(0).millisecond(0)
 		var endDay = end.clone().hour(0).minute(0).second(0).millisecond(0)
-
+/*
 		var dayIndex = startDay.clone();
 		while (endDay.diff(dayIndex) >= 0)
 		{
@@ -260,7 +266,7 @@ function redrawTimeline()
 			data.addRow([lunchStart.toDate(), lunchEnd.toDate(), "Lunch", "range", "Meals"]);
 			dayIndex.add('days', 1);
 		}
-		
+	*/	
 		var options = {
 			"style": "box",
 			"cluster" : true,
