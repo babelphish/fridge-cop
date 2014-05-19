@@ -28,6 +28,8 @@
 		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/json2/20130526/json2.min.js"></script>
 		<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 		<script type="text/javascript" src="/js/moment.min.js"></script>
+		<script type="text/javascript" src="/js/moment-timezone.min.js"></script>
+		<script type="text/javascript" src="/js/moment-timezone-data.js"></script>
 		<script type="text/javascript" src="//cdn.jsdelivr.net/qtip2/2.2.0/jquery.qtip.min.js"></script>
 		<script type="text/javascript" src="//www.google.com/jsapi"></script>
 		<script type="text/javascript" src="/js/timeline-min.js"></script>

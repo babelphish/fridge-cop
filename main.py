@@ -86,7 +86,10 @@ def get_serialized_timeline_states():
         for state in states:
                 state_list.append(fridge_state(state))
 
-        return json.dumps(state_list)
+        return json.dumps({ "data" : state_list,
+                            "start" : str(timeline_start_date),
+                            "end" : str(datetime.datetime.now() + datetime.timedelta(minutes = 10))
+                         })
 
 def broadcast_state(message):
         final_url = node_url

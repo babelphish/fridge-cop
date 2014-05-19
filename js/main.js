@@ -139,7 +139,7 @@ function attachEvents()
 			open : function() 
 			{
 				redrawTimeline();
-			}  
+			} 
 		  }
 	})
 	
@@ -181,7 +181,7 @@ function redrawTimeline()
 	{
 	
 		timelineRequests[requestIndex] = 
-		$.get("/js/test_data.js")
+		$.get("/timeline_states")
 		.done(
 			function(timelineStates)
 			{
@@ -202,16 +202,22 @@ function redrawTimeline()
 		data.addColumn('datetime', 'end');
 		data.addColumn('string', 'content');
 		data.addColumn('string', 'type');
-		
+		data.addColumn('string', 'group');
+
 		//construct timeline
 		
 		var lookingForFridgeState = 1;
 		
 		var statePair = {};
+
 		
-		$.each(timelineStates, function(index, state)
-		{
+		
+	//	data.addRow([, state.getChangeTime().toDate(), seconds + "s", "range", "Times"]);
+		
+		$.each(timelineStates.data, function(index, state)
+		{ 
 			var state = new StateData(state);
+			state.setTimeZone("America/New_York");
 			if (state.isFridgeData())
 			{
 				if (!statePair.startState)
@@ -226,11 +232,10 @@ function redrawTimeline()
 					if (state.getState() == 2)
 					{
 						//add the timeline elements
-						
-						
-						data.addRow([statePair.startState.getChangeTime().toDate(),state.getChangeTime().toDate(), "", "box"]);
 
-						statePair = {};
+						var seconds = state.getChangeTime().diff(statePair.startState.getChangeTime(), "seconds");
+						data.addRow([statePair.startState.getChangeTime().toDate(), , seconds + "s", "box", "Fridge Open"]);
+						statePair = {};  //clear out pair
 					}
 				}
 			}
@@ -240,9 +245,27 @@ function redrawTimeline()
 		timeline = new links.Timeline(document.getElementById('timeline'));
 
 		// specify options
+		var start = moment(timelineStates.start).tz("America/New_York");
+		var end = moment(timelineStates.end).tz("America/New_York");
+
+		var startDay = start.clone().hour(0).minute(0).second(0).millisecond(0)
+		var endDay = end.clone().hour(0).minute(0).second(0).millisecond(0)
+
+		var dayIndex = startDay.clone();
+		while (endDay.diff(dayIndex) >= 0)
+		{
+			lunchStart = dayIndex.clone().hour(12);
+			lunchEnd = dayIndex.clone().hour(13);
+			
+			data.addRow([lunchStart.toDate(), lunchEnd.toDate(), "Lunch", "range", "Meals"]);
+			dayIndex.add('days', 1);
+		}
+		
 		var options = {
 			"style": "box",
-			"cluster" : true
+			"cluster" : true,
+			"stackEvents" : true,
+			"showMajorLabels" : false
 		};
 		
 		// Draw our timeline with the created data and options
@@ -349,6 +372,11 @@ function StateData(stateData)
 	that.eventTime = moment(stateData.t, serverDateFormat);
 	that.lastState = stateData.ls;
 	that.state = stateData.s;
+	
+	this.setTimeZone = function(zone)
+	{
+		that.eventTime.tz(zone);
+	}
 	
 	this.isFridgeData = function()
 	{
