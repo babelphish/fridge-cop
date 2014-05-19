@@ -173,7 +173,6 @@ function redrawTimeline()
 
 	$("#timeline").html("Loading...");
 
-
 	requestIndex++;
 
 	makeRequest(requestIndex);
@@ -182,7 +181,7 @@ function redrawTimeline()
 	{
 	
 		timelineRequests[requestIndex] = 
-		$.get("/timeline_states")
+		$.get("/js/test_data.js")
 		.done(
 			function(timelineStates)
 			{
@@ -202,30 +201,13 @@ function redrawTimeline()
 		data.addColumn('datetime', 'start');
 		data.addColumn('datetime', 'end');
 		data.addColumn('string', 'content');
+		data.addColumn('string', 'type');
 		
 		//construct timeline
 		
 		var lookingForFridgeState = 1;
 		
 		var statePair = {};
-
-		$.each(timelineStates, function(index, state)
-		{
-			var state = new StateData(state);
-			var content = null;
-			if (state.getState() == 1)
-			{
-				content = '<img src="images/fridge_open2.png" class="timelineImage">'
-			}
-			else if (state.getState() == 3)
-			{
-				content = '<img src="images/fridge_unknown.png" class="timelineImage">'
-			}
-			if (content)
-			{
-				data.addRow([state.getChangeTime().toDate(), , content]);
-			}
-		})
 		
 		$.each(timelineStates, function(index, state)
 		{
@@ -244,7 +226,9 @@ function redrawTimeline()
 					if (state.getState() == 2)
 					{
 						//add the timeline elements
-						data.addRow([statePair.startState.getChangeTime().toDate(),state.getChangeTime().toDate(), ""]);
+						
+						
+						data.addRow([statePair.startState.getChangeTime().toDate(),state.getChangeTime().toDate(), "", "box"]);
 
 						statePair = {};
 					}
@@ -257,9 +241,8 @@ function redrawTimeline()
 
 		// specify options
 		var options = {
-			"width":  "100%",
-			"height": "100%",
-			"style": "box"
+			"style": "box",
+			"cluster" : true
 		};
 		
 		// Draw our timeline with the created data and options

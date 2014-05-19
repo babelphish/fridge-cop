@@ -139,7 +139,7 @@ div.timeline-navigation-new-line {
 
 div.timeline-navigation-delete {
     padding: 0 0 0 5px;
-    background: url('img/deleteEvent.png') no-repeat center;
+    background: url('/images/timeline/deleteEvent.png') no-repeat center;
     width: 13px;
     height: 13px;
 }

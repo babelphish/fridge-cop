@@ -63,7 +63,7 @@ div.timeline-event-selected {
 
 /* TODO: use another color or pattern? */
 div.timeline-event-cluster {
-    background: url('img/cluster_bg.png') #97b0f8;
+    background: url('/images/timeline/cluster_bg.png') #97b0f8;
     color: #ffffff;
 }
 
@@ -182,7 +182,7 @@ div.timeline-navigation-move-right {
 }
 
 div.timeline-navigation-new {
-    background: url('img/16/new.png') no-repeat center;
+    background: url('/images/timeline/16/new.png') no-repeat center;
 }
 
 /* separator between new and navigation buttons */
@@ -191,21 +191,21 @@ div.timeline-navigation-new-line {
 }
 
 div.timeline-navigation-delete {
-    background: url('img/16/delete.png') no-repeat center;
+    background: url('/images/timeline/16/delete.png') no-repeat center;
 }
 
 div.timeline-navigation-zoom-in {
-    background: url('img/16/zoomin.png') no-repeat center;
+    background: url('/images/timeline/16/zoomin.png') no-repeat center;
 }
 
 div.timeline-navigation-zoom-out {
-    background: url('img/16/zoomout.png') no-repeat center;
+    background: url('/images/timeline/16/zoomout.png') no-repeat center;
 }
 
 div.timeline-navigation-move-left {
-    background: url('img/16/moveleft.png') no-repeat center;
+    background: url('/images/timeline/16/moveleft.png') no-repeat center;
 }
 
 div.timeline-navigation-move-right {
-    background: url('img/16/moveright.png') no-repeat center;
+    background: url('/images/timeline/16/moveright.png') no-repeat center;
 }

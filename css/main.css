@@ -348,14 +348,12 @@ table {
   padding: 20px;
   width: auto;
   max-width: 900px;
-  height: 400px;
   margin: 20px auto;
 }
 
 #timeline 
 {
 	position: relative;
-	height: 400px;
 	width: 900px;
 }
 
