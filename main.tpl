@@ -3,9 +3,9 @@
 	<head>
 		<!--<meta name="viewport" content="width=500, initial-scale=1" > -->
 		<link rel="stylesheet" type="text/css" href="/css/jquery.qtip.min.css"></link>
-		<link rel="stylesheet" type="text/css" href="/css/timeline.css">
-		<link rel="stylesheet" type="text/css" href="/css/main.css"></link>
-		<link rel="stylesheet" type="text/css" href="/css/magnific-popup.css"> 
+		<link rel="stylesheet" type="text/css" href="/css/timeline.css"></link>
+		<link rel="stylesheet" type="text/css" href="/css/main.css?v=6"></link>
+		<link rel="stylesheet" type="text/css" href="/css/magnific-popup.css"></link> 
 		<title>Fridge Cop</title>
 	</head>
 
@@ -29,7 +29,7 @@
 		<script type="text/javascript" src="/init.js"></script>
 		
 		<script type="text/javascript" src="/js/jquery-1.11.1.min.js"></script>
-		<script type="text/javascript" src="/js/main.js"></script>
+		<script type="text/javascript" src="/js/main.js?v=6"></script>
 		<script type="text/javascript" src="/js/json2.min.js"></script>
 		<script type="text/javascript" src="/js/moment.min.js"></script>
 		<script type="text/javascript" src="/js/moment-timezone.min.js"></script>

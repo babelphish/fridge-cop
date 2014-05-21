@@ -334,6 +334,7 @@ table {
 	right: 62px;
 	background-size: contain;
 	cursor: pointer;
+	transform: rotate(0deg);
 }
 
 .white-popup 

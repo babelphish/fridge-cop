@@ -37,9 +37,12 @@ def development():
 @bottle.route('/')
 def home():
         try:
-                response.set_header("Content-Security-Policy", "default-src *.fridge-cop.com localhost:8080;" +
-                                " connect-src node.fridge-cop.com node.fridge-cop.com:8080 ws://node.fridge-cop.com:8080 ws://node.fridge-cop.com localhost:8080;" +
-                                " script-src *.fridge-cop.com *.fridge-cop.com:8080 www.google.com localhost:8080 ")
+                response.set_header("Content-Security-Policy", "default-src *.fridge-cop.com  localhost:8080;" +
+                                " connect-src *.fridge-cop.com:* ws://node.fridge-cop.com:8080 ws://node.fridge-cop.com *.fridge-cop.appspot.com fridge-cop.appspot.com localhost:8080;" +
+                                " script-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com www.google.com localhost:8080;" +
+                                " style-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com localhost:8080;" +
+                                " font-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com localhost:8080;" +
+                                " img-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com localhost:8080;")
                 user = users.get_current_user()
 
                 if user:

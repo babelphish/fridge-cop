@@ -30,7 +30,7 @@ var images = [
 
 $(function()
 {
-	//processState(currentSerializedState);
+	processState(currentSerializedState);
 	preload(images);
 
 	var endPoint = "state_changes";
