@@ -27,31 +27,38 @@ door_ancestor_key = ndb.Key("FridgeDoor", "main")
 date_1970 = datetime.datetime.utcfromtimestamp(0)
 node_url = "http://node.fridge-cop.com/"
 
-
 config = ConfigParser.ConfigParser()
 config.read("secure_keys.ini")
 state_update_key = config.get("secure_keys", "state_update_key")
 
+def development():
+        return os.environ['SERVER_SOFTWARE'].startswith('Development')
 
 @bottle.route('/')
 def home():
         try:
+                response.set_header("Content-Security-Policy", "default-src *.fridge-cop.com localhost:8080;" +
+                                " connect-src node.fridge-cop.com node.fridge-cop.com:8080 ws://node.fridge-cop.com:8080 ws://node.fridge-cop.com localhost:8080;" +
+                                " script-src *.fridge-cop.com *.fridge-cop.com:8080 www.google.com localhost:8080 ")
                 user = users.get_current_user()
-                logged_in = (user is not None)
-                points = 0
-                serialized_state = get_serialized_current_state()
 
                 if user:
                         url = users.create_logout_url("/")
-                        userPoints = get_user_points(user)
-                        points = userPoints.all_time_total
                 else:
                         url = users.create_login_url("/")
- 
-                return home_template.render(serialized_state = serialized_state,
-                                            logged_in = logged_in,
-                                            user_url = url,
-                                            fridge_points = points)
+
+                current_state = get_current_fridge_entity()
+                
+                stateClass = "fridgeStateUnknown"
+
+                if (current_state.state == 1):
+                        state_class = "fridgeStateOpen"
+                elif (current_state.state == 2):
+                        state_class = "fridgeStateClosed"
+
+                return home_template.render(fridge_state = state_class,
+                                            user_url = url)
+
         except Exception as e:
                 return str(e)
 
@@ -73,9 +80,6 @@ def change_state():
                         return "Same Status"
         except Exception as e:
                 return str(e)
-
-def development():
-        return os.environ['SERVER_SOFTWARE'].startswith('Development')
 
 #get the correct delayed state
 @bottle.route('/timeline_states')
@@ -208,6 +212,23 @@ def get_current_fridge_entity():
 
         return door_entity
 
+@bottle.route('/init.js')
+def js_init():
+        response.content_type = 'application/javascript'
+        user = users.get_current_user()
+        logged_in = (user is not None)
+        fridge_points = 0
+
+        if user:
+                userPoints = get_user_points(user)
+                fridge_points = userPoints.all_time_total
+
+        serialized_state = get_serialized_current_state()
+        
+        return SimpleTemplate(name='init.js.tpl').render(logged_in = logged_in,
+                                                         fridge_points = fridge_points,
+                                                         serialized_state = serialized_state)
+
 @bottle.route('/admin/test')
 def home():
         return SimpleTemplate(name='test_points.tpl').render()
@@ -232,3 +253,6 @@ def fonts_static(filename):
 def error_404(error):
   """Return a custom 404 error."""
   return 'Sorry, Nothing at this URL.'
+
+if __name__ == "__main__":
+    main()

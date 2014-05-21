@@ -1,8 +1,11 @@
 google.load("visualization", "1"); //loads visualization
 			
 var timer = null;
-var currentState = null;
 var receivedStates = [];
+var serverDateFormat = 'YYYY-MM-DD HH:mm:ss.SSS Z'
+var updateURL = 'http://node.fridge-cop.com/';
+var timeline = null;
+var currentState = null;
 
 var IMAGE =
 	{
@@ -25,14 +28,15 @@ var images = [
 		'/images/failure.png'
 	]
 
-var updateURL = 'http://node.fridge-cop.com/';
-
 $(function()
 {
+	//processState(currentSerializedState);
 	preload(images);
 
 	var endPoint = "state_changes";
 	var reconnect = false;
+	// Instantiate our timeline object.
+	timeline = new links.Timeline(document.getElementById('timeline'));
 	
 	if (document.location.hostname == "localhost")
 	{
@@ -78,9 +82,7 @@ $(function()
 		$("#whiteboardLink").html(loginContent); //default blank
 	}
 	
-	attachEvents();
-		
-	processState(currentState);
+	attachEvents();	
 })
 
 function displayWhiteBoardPoints()
@@ -143,6 +145,14 @@ function attachEvents()
 		  }
 	})
 	
+	$(window).resize(function() 
+	{
+		if (timeline)
+		{
+			timeline.checkResize();
+		}
+	})
+	
 	$("#lastOpenedOverlay").qtip({
 		style: 
 		{
@@ -170,8 +180,6 @@ function redrawTimeline()
 	{
 		request.abort();
 	})
-
-	$("#timeline").html("Loading...");
 
 	requestIndex++;
 
@@ -239,6 +247,10 @@ function redrawTimeline()
 						{
 							eventText = parseInt(seconds / 60) + " min"
 						}
+						else if (seconds == 0)
+						{
+							eventText = "1 sec";
+						}
 						
 						data.addRow([statePair.startState.getChangeTime().toDate(), , eventText, "box", "Fridge Open"]);
 						statePair = {};  //clear out pair
@@ -246,10 +258,7 @@ function redrawTimeline()
 				}
 			}
 		});
-
-		// Instantiate our timeline object.
-		timeline = new links.Timeline(document.getElementById('timeline'));
-
+	
 		// specify options
 		var start = moment(timelineStates.start).tz("America/New_York");
 		var end = moment(timelineStates.end).tz("America/New_York");
@@ -271,7 +280,8 @@ function redrawTimeline()
 			"style": "box",
 			"cluster" : true,
 			"stackEvents" : true,
-			"showMajorLabels" : false
+			"showMajorLabels" : false,
+			"width" : "auto"
 		};
 		
 		// Draw our timeline with the created data and options
@@ -293,9 +303,9 @@ function processState(state)
 }
 
 function preload(arrayOfImages) {
-	$("body").append('<div id="imagePreloadArea" style="width: 0px; height: 0px; position: absolute;">');
+	$("body").append('<div id="imagePreloadArea">');
 	$(arrayOfImages).each(function(index, imageLocation){
-		$("#imagePreloadArea").append('<img style="width:0px; height:0px" src="' + imageLocation + '"/>');
+		$("#imagePreloadArea").append('<img class="preloadedImage" src="' + imageLocation + '"/>');
 	});
 }
 

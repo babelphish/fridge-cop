@@ -55,11 +55,6 @@ table {
 	user-select: none;
 }
 
-.startHidden
-{
-	display: none;
-}
-
 .spinning
 {
 	-webkit-animation: spin 1s linear infinite;
@@ -354,13 +349,30 @@ table {
 #timeline 
 {
 	position: relative;
-	width: 900px;
 }
 
 .timelineImage
 {
 	width: 48px;
 	height: 48px;
+}
+
+.hidden
+{
+	display: none;
+}
+
+#imagePreloadArea
+{
+	width: 0px; 
+	height: 0px; 
+	position: absolute;
+}
+
+.preloadedImage
+{
+	width:0px; 
+	height:0px;
 }
 
 html, body
