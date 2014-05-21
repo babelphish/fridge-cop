@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<!--<meta name="viewport" content="width=500, initial-scale=1" > -->
+		<meta name="viewport" content="width=365, initial-scale=1" >
 		<link rel="stylesheet" type="text/css" href="/css/jquery.qtip.min.css"></link>
 		<link rel="stylesheet" type="text/css" href="/css/timeline.css"></link>
 		<link rel="stylesheet" type="text/css" href="/css/main.css"></link>

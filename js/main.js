@@ -7,17 +7,6 @@ var updateURL = 'http://node.fridge-cop.com/';
 var timeline = null;
 var currentState = null;
 
-var IMAGE =
-	{
-		FRIDGE_CLOSED: 0,
-		FRIDGE_OPEN: 1,
-		FRIDGE_UNKNOWN : 2,
-		FAST_POLLING: 3,
-		SLOW_POLLING: 4,
-		SUCCESS: 5,
-		FAILURE: 6
-	}
-
 var images = [
 		'/images/success.png',
 		'/images/failure.png'
@@ -95,7 +84,7 @@ function attachEvents()
 		if (userLoggedIn() && fridgeIsOpen())
 		{
 			spinner.setText("Verifying Click...");
-			spinner.setImage(IMAGE.FRIDGE_CLOSED);
+			spinner.setImage("./images/sprites/fridge_open.png");
 			spinner.spin();
 			spinner.show();
 			$.get("/fridge_point_click").done(function(result)
@@ -104,19 +93,19 @@ function attachEvents()
 				if (result.error)
 				{
 					spinner.setText(result.errorMessage);
-					spinner.setImage(IMAGE.FAILURE);
+					spinner.setImage("./images/failure.png");
 				}
 				else
 				{
 					spinner.setText("+1 FRIDGE POINTS YEAHHHH");
-					spinner.setImage(IMAGE.SUCCESS);
+					spinner.setImage("./images/success.png");
 					fridgePoints = result.points;
 					displayWhiteBoardPoints();
 				}
 			}).fail(function()
 			{
 				spinner.setText('Click failed! :(');
-				spinner.setImage(IMAGE.FAILURE);
+				spinner.setImage("./images/failure.png");
 			}).always(function()
 			{
 				spinner.stop();
@@ -357,7 +346,7 @@ function GameSpinner(id)
 	
 	this.setImage = function(imageURL)
 	{
-		spinner.find(".spinImage").css("background-image", 'url(' + getImage(imageURL) + ')')
+		spinner.find(".spinImage").css("background-image", 'url(' + imageURL + ')')
 	}
 	
 	this.show = function()
