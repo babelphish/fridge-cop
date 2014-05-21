@@ -70,30 +70,9 @@ table {
 	top: 50%;
 	margin-left: auto;
 	margin-right: auto;
-	width: 400px;
+	width: 346px;
 	height: 380px;
 	margin-top: -200px;
-}
-
-#fridgeStateContainer.fridgeStateOpen
-{
-	background: url("../images/fridge_open2.png") no-repeat;
-	background-size: contain;
-	background-position: center;
-}
-
-#fridgeStateContainer.fridgeStateClosed
-{
-	background: url("../images/fridge_closed2.png") no-repeat;
-	background-size: contain;
-	background-position:center;
-}
-
-#fridgeStateContainer.fridgeStateUnknown
-{
-	background: url("../images/fridge_unknown.png") no-repeat;
-	background-size: contain;
-	background-position:center;
 }
 
 #fridgeClickOverlay
@@ -132,16 +111,6 @@ table {
 	z-index: 10;
 }
 
-.slowPolling
-{
-	background: url("../images/snail.png") no-repeat;
-}
-
-.fastPolling
-{
-	background: url("../images/rabbit.png") no-repeat;
-}
-
 @font-face
 {
 	font-family: digital;
@@ -160,7 +129,7 @@ table {
 	width: 4em;
 	top: 0.45em; 
 	position: absolute;
-	left: 200px;
+	left: 180px;
 }
 
 #lastOpenedTime
@@ -195,7 +164,7 @@ table {
 	text-decoration: none;
 	display: inline-block;
 	width: 100%;
-	height: 100%; //otherwise we get glitchy hover
+	height: 100%;
 }
 
 #fridgeWhiteboard

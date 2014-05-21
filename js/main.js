@@ -19,11 +19,6 @@ var IMAGE =
 	}
 
 var images = [
-		'/images/fridge_closed2.png',
-		'/images/fridge_open2.png',
-		'/images/fridge_unknown.png',
-		'/images/rabbit.png',
-		'/images/snail.png',
 		'/images/success.png',
 		'/images/failure.png'
 	]

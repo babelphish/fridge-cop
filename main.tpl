@@ -4,7 +4,8 @@
 		<!--<meta name="viewport" content="width=500, initial-scale=1" > -->
 		<link rel="stylesheet" type="text/css" href="/css/jquery.qtip.min.css"></link>
 		<link rel="stylesheet" type="text/css" href="/css/timeline.css"></link>
-		<link rel="stylesheet" type="text/css" href="/css/main.css?v=6"></link>
+		<link rel="stylesheet" type="text/css" href="/css/main.css"></link>
+		<link rel="stylesheet" type="text/css" href="/css/sprites.css"></link>
 		<link rel="stylesheet" type="text/css" href="/css/magnific-popup.css"></link> 
 		<title>Fridge Cop</title>
 	</head>

@@ -1,0 +1,22 @@
+.fridgeStateClosed, .fridgeStateOpen, .fridgeStateUnknown{
+	background: url(../images/sprites/sprites.png) no-repeat;
+}
+
+.fridgeStateUnknown{
+	background-position: 0 0;
+	width: 346px;
+	height: 380px;
+}
+
+.fridgeStateOpen{
+	background-position: -351px 0;
+	width: 346px;
+	height: 380px;
+}
+
+.fridgeStateUnknown{
+	background-position: -705px 0;
+	width: 346px;
+	height: 380px;
+}
+
