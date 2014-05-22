@@ -34,15 +34,22 @@ state_update_key = config.get("secure_keys", "state_update_key")
 def development():
         return os.environ['SERVER_SOFTWARE'].startswith('Development')
 
+csp_header_addition = ""
+if (development()):
+        csp_header_addition = " localhost:8080 192.168.1.104:8080 "
+
+csp_header =  "default-src *.fridge-cop.com  localhost:8080 " + csp_header_addition
+csp_header += " connect-src *.fridge-cop.com:* ws://node.fridge-cop.com:8080 ws://node.fridge-cop.com *.fridge-cop.appspot.com fridge-cop.appspot.com" + csp_header_addition
+csp_header += " script-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com www.google.com" + csp_header_addition
+csp_header += " style-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com" + csp_header_addition
+csp_header += " font-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com" + csp_header_addition
+csp_header += " img-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com" + csp_header_addition
+
+
 @bottle.route('/')
 def home():
         try:
-                response.set_header("Content-Security-Policy", "default-src *.fridge-cop.com  localhost:8080;" +
-                                " connect-src *.fridge-cop.com:* ws://node.fridge-cop.com:8080 ws://node.fridge-cop.com *.fridge-cop.appspot.com fridge-cop.appspot.com localhost:8080;" +
-                                " script-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com www.google.com localhost:8080;" +
-                                " style-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com localhost:8080;" +
-                                " font-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com localhost:8080;" +
-                                " img-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com localhost:8080;")
+                response.set_header("Content-Security-Policy", csp_header)
                 user = users.get_current_user()
 
                 if user:
