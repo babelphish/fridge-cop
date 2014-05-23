@@ -252,11 +252,8 @@ function redrawTimeline(timeline)
 		});
 	
 		// specify options
-		var start = moment(timelineStates.start).tz("America/New_York");
-		var end = moment(timelineStates.end).tz("America/New_York");
-
-		var realStart = start.clone().subtract('hours', 1)
-		var realEnd = end.clone().add('hours', 1)
+		var start = moment(timelineStates.start, serverDateFormat);
+		var end = moment(timelineStates.end, serverDateFormat);
 		
 		var startDay = start.clone().hour(0).minute(0).second(0).millisecond(0)
 		var endDay = end.clone().hour(0).minute(0).second(0).millisecond(0)
@@ -267,7 +264,7 @@ function redrawTimeline(timeline)
 			breakfastStart = dayIndex.clone().hour(6).minute(30);
 			breakfastEnd = dayIndex.clone().hour(9);
 			
-			if ((breakfastStart.diff(realEnd) > 0) && (realStart.diff(breakfastEnd) > 0))
+			if ((breakfastStart.diff(start) > 0) && (end.diff(breakfastEnd) > 0))
 			{
 				data.addRow([breakfastStart.toDate(), breakfastEnd.toDate(), "Breakfast", "range", "Meals", "meal"]);
 			}
@@ -275,15 +272,15 @@ function redrawTimeline(timeline)
 			lunchStart = dayIndex.clone().hour(11).minute(30);
 			lunchEnd = dayIndex.clone().hour(13).minute(30);
 			
-			if ((lunchEnd.diff(realEnd) > 0) && (realStart.diff(lunchStart) > 0))
+			if ((lunchStart.diff(start) > 0) && (end.diff(lunchEnd) > 0))
 			{
 				data.addRow([lunchStart.toDate(), lunchEnd.toDate(), "Lunch", "range", "Meals", "meal"]);
 			}
 			
-			dinnerStart = dayIndex.clone().hour(6).minute();
-			dinnerEnd = dayIndex.clone().hour(8).minute(30);
+			dinnerStart = dayIndex.clone().hour(18);
+			dinnerEnd = dayIndex.clone().hour(20).minute(30);
 			
-			if ((dinnerEnd.diff(realEnd) > 0) && (realStart.diff(dinnerStart) > 0))
+			if ((dinnerStart.diff(start) > 0) && (end.diff(dinnerEnd) > 0))
 			{
 				data.addRow([dinnerStart.toDate(), dinnerEnd.toDate(), "Dinner", "range", "Meals", "meal"]);
 			}

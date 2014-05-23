@@ -229,7 +229,6 @@ def js_init():
         response.set_header("Pragma", "no-cache")
         response.set_header("Expires", "0");
         
-       
         user = users.get_current_user()
         logged_in = (user is not None)
         fridge_points = 0

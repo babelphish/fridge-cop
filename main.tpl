@@ -29,7 +29,7 @@
 		<script type="text/javascript" src="/js/jquery-1.11.1.min.js"></script>
 		<script type="text/javascript" src="/js/vex.combined.min.js"></script>
 		
-		<script type="text/javascript" src="/js/main.js?v=7"></script>
+		<script type="text/javascript" src="/js/main.js?v=8"></script>
 		<script type="text/javascript" src="/js/json2.min.js"></script>
 		<script type="text/javascript" src="/js/moment.min.js"></script>
 		<script type="text/javascript" src="/js/moment-timezone.min.js"></script>

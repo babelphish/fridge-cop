@@ -348,7 +348,10 @@ table {
 div.meal
 {
 	background-color: cornflowerblue;
-	color: white	
+	color: white;
+	text-align: center;
+	font-size: 0.8em;
+	line-height: 0.8em;
 }
 
 html, body
