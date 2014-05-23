@@ -225,6 +225,11 @@ def get_current_fridge_entity():
 @bottle.route('/init.js')
 def js_init():
         response.content_type = 'application/javascript'
+        response.set_header("Cache-Control", "no-cache, no-store, must-revalidate")
+        response.set_header("Pragma", "no-cache")
+        response.set_header("Expires", "0");
+        
+       
         user = users.get_current_user()
         logged_in = (user is not None)
         fridge_points = 0

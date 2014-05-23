@@ -7,6 +7,8 @@ var updateURL = 'http://node.fridge-cop.com/';
 var timeline = null;
 var currentState = null;
 
+vex.defaultOptions.className = 'vex-theme-default';
+
 var images = [
 		'/images/success.png',
 		'/images/failure.png'
@@ -19,8 +21,6 @@ $(function()
 
 	var endPoint = "state_changes";
 	var reconnect = false;
-	// Instantiate our timeline object.
-	timeline = new links.Timeline(document.getElementById('timeline'));
 	
 	if (document.location.hostname == "localhost")
 	{
@@ -113,21 +113,30 @@ function attachEvents()
 		}
 	})
 	
-	$("#statPopupButton").magnificPopup(
+	$("#statPopupButton").on("click", function()
 	{
-		  items:
+		vex.dialog.open({
+			message: '<div id="timeline" class="hidden">test</div>',
+		  buttons: [
+		  ],
+		  callback: function(data) 
 		  {
-			src: "#statsPopup", // can be a HTML string, jQuery object, or CSS selector
-			type: 'inline'
 		  },
-		  callbacks:
+		  contentCSS :
 		  {
-			open : function() 
-			{
-				redrawTimeline();
-			} 
+			"width" : 700
+		  },
+		  css :
+		  {
+		  
 		  }
-	})
+		  
+		});
+		
+		// Instantiate our timeline object.
+		timeline = new links.Timeline(document.getElementById('timeline'));
+		redrawTimeline(timeline);
+	});
 	
 	$(window).resize(function() 
 	{
@@ -158,7 +167,7 @@ function attachEvents()
 timelineRequests = {};
 var requestIndex = 0;
 
-function redrawTimeline() 
+function redrawTimeline(timeline) 
 {
 	$.each(timelineRequests, function(index, request) 
 	{
@@ -177,6 +186,8 @@ function redrawTimeline()
 		.done(
 			function(timelineStates)
 			{
+				$("#timeline").show();
+
 				renderTimeline(JSON.parse(timelineStates));
 			})
 		.always(
@@ -195,17 +206,14 @@ function redrawTimeline()
 		data.addColumn('string', 'content');
 		data.addColumn('string', 'type');
 		data.addColumn('string', 'group');
+		data.addColumn('string', 'className');	
 
 		//construct timeline
 		
 		var lookingForFridgeState = 1;
 		
 		var statePair = {};
-
-		
-		
-	//	data.addRow([, state.getChangeTime().toDate(), seconds + "s", "range", "Times"]);
-		
+				
 		$.each(timelineStates.data, function(index, state)
 		{ 
 			var state = new StateData(state);
@@ -236,7 +244,7 @@ function redrawTimeline()
 							eventText = "1 sec";
 						}
 						
-						data.addRow([statePair.startState.getChangeTime().toDate(), , eventText, "box", "Fridge Open"]);
+						data.addRow([statePair.startState.getChangeTime().toDate(), , eventText, "box", "Open",""]);
 						statePair = {};  //clear out pair
 					}
 				}
@@ -247,19 +255,42 @@ function redrawTimeline()
 		var start = moment(timelineStates.start).tz("America/New_York");
 		var end = moment(timelineStates.end).tz("America/New_York");
 
+		var realStart = start.clone().subtract('hours', 1)
+		var realEnd = end.clone().add('hours', 1)
+		
 		var startDay = start.clone().hour(0).minute(0).second(0).millisecond(0)
 		var endDay = end.clone().hour(0).minute(0).second(0).millisecond(0)
-/*
+
 		var dayIndex = startDay.clone();
-		while (endDay.diff(dayIndex) >= 0)
+		while (startDay.diff(dayIndex) >= 0)
 		{
-			lunchStart = dayIndex.clone().hour(12);
-			lunchEnd = dayIndex.clone().hour(13);
+			breakfastStart = dayIndex.clone().hour(6).minute(30);
+			breakfastEnd = dayIndex.clone().hour(9);
 			
-			data.addRow([lunchStart.toDate(), lunchEnd.toDate(), "Lunch", "range", "Meals"]);
+			if ((breakfastStart.diff(realEnd) > 0) && (realStart.diff(breakfastEnd) > 0))
+			{
+				data.addRow([breakfastStart.toDate(), breakfastEnd.toDate(), "Breakfast", "range", "Meals", "meal"]);
+			}
+
+			lunchStart = dayIndex.clone().hour(11).minute(30);
+			lunchEnd = dayIndex.clone().hour(13).minute(30);
+			
+			if ((lunchEnd.diff(realEnd) > 0) && (realStart.diff(lunchStart) > 0))
+			{
+				data.addRow([lunchStart.toDate(), lunchEnd.toDate(), "Lunch", "range", "Meals", "meal"]);
+			}
+			
+			dinnerStart = dayIndex.clone().hour(6).minute();
+			dinnerEnd = dayIndex.clone().hour(8).minute(30);
+			
+			if ((dinnerEnd.diff(realEnd) > 0) && (realStart.diff(dinnerStart) > 0))
+			{
+				data.addRow([dinnerStart.toDate(), dinnerEnd.toDate(), "Dinner", "range", "Meals", "meal"]);
+			}
+
 			dayIndex.add('days', 1);
 		}
-	*/	
+
 		var options = {
 			"style": "box",
 			"cluster" : true,

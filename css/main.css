@@ -345,6 +345,12 @@ table {
 	height:0px;
 }
 
+div.meal
+{
+	background-color: cornflowerblue;
+	color: white	
+}
+
 html, body
 {
 	height: 100%;
