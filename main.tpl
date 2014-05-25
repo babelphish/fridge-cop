@@ -20,23 +20,10 @@
 			<div id="fridgeWhiteboard" class="whiteboardText"><a href="{{user_url}}" id="whiteboardLink" ></a></div>
 			<div id="statPopupButton"></div>
 			<div id="fridgeClickVerifying" class="hidden">
-			
+
 			</div>
-		</div>		
+		</div>
 
-		<script type="text/javascript" src="//www.google.com/jsapi"></script>
-		<script type="text/javascript" src="/init.js"></script>
-		<script type="text/javascript" src="/js/jquery-1.11.1.min.js"></script>
-		<script type="text/javascript" src="/js/vex.combined.min.js"></script>
-		
-		<script type="text/javascript" src="/js/main.js"></script>
-		<script type="text/javascript" src="/js/json2.min.js"></script>
-		<script type="text/javascript" src="/js/moment.min.js"></script>
-		<script type="text/javascript" src="/js/moment-timezone.min.js"></script>
-		<script type="text/javascript" src="/js/moment-timezone-data.js"></script>
-		<script type="text/javascript" src="/js/jquery.qtip.min.js"></script>
-		<script type="text/javascript" src="/js/timeline.js"></script>
-		<script src="//node.fridge-cop.com/socket.io/socket.io.js"></script>
-
+		{{!script_tags}}
 	</body>
 </html>

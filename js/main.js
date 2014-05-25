@@ -150,7 +150,7 @@ function attachEvents()
 		style: 
 		{
 			classes: 'qtip-bootstrap',
-			width: 150, // Overrides width set by CSS (but no max-width!)
+			width: 150 // Overrides width set by CSS (but no max-width!)
 		},
 		content: 
 		{

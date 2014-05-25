@@ -4,6 +4,7 @@ from fridge_model import FridgeDoorState
 from fridge_door import FridgeDoor
 from google.appengine.ext import ndb
 from datetime import timedelta
+from minification_support import getScriptTags
 import ConfigParser
 import logging
 import datetime
@@ -19,8 +20,6 @@ from text import Text
 # application is embedded within an App Engine WSGI application server.
 bottle = Bottle()
 
-home_template = SimpleTemplate(name='main.tpl')
-
 fridge_door_state_cache_key = "fridgeDoorState"
 fridge_last_opened_cache_key = "fridgeLastOpened"
 door_ancestor_key = ndb.Key("FridgeDoor", "main")
@@ -32,11 +31,16 @@ config.read("secure_keys.ini")
 state_update_key = config.get("secure_keys", "state_update_key")
 
 def development():
-        return os.environ['SERVER_SOFTWARE'].startswith('Development')
+        return (os.environ['SERVER_SOFTWARE'].startswith('Development'))
 
+home_template = SimpleTemplate(name='main.tpl')
 csp_header_addition = ""
+
 if (development()):
+        script_tags = getScriptTags(True)
         csp_header_addition = " localhost:8080 192.168.1.104:8080 "
+else:
+        script_tags = getScriptTags(False)
 
 csp_header =  "default-src *.fridge-cop.com  localhost:8080 " + csp_header_addition
 csp_header += " connect-src *.fridge-cop.com:* ws://node.fridge-cop.com:8080 ws://node.fridge-cop.com *.fridge-cop.appspot.com fridge-cop.appspot.com" + csp_header_addition
@@ -45,6 +49,7 @@ csp_header += " style-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop
 csp_header += " font-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com" + csp_header_addition
 csp_header += " img-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com" + csp_header_addition
 
+print("test")
 
 @bottle.route('/')
 def home():
@@ -66,7 +71,8 @@ def home():
                 elif (current_state.state == 2):
                         state_class = "fridgeStateClosed"
 
-                return home_template.render(fridge_state = state_class,
+                return home_template.render(script_tags = script_tags,
+                                            fridge_state = state_class,
                                             user_url = url)
 
         except Exception as e:
