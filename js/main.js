@@ -255,11 +255,17 @@ function redrawTimeline(timeline)
 		var start = moment(timelineStates.start, serverDateFormat);
 		var end = moment(timelineStates.end, serverDateFormat);
 		
+		var visibleStart = start.add("hours", -1);
+		var visibleEnd = end.add("hours", 1);
+
+		var initialStart = end.clone().add("hours", -12);
+		var initialEnd = end.clone()
+		
 		var startDay = start.clone().hour(0).minute(0).second(0).millisecond(0)
 		var endDay = end.clone().hour(0).minute(0).second(0).millisecond(0)
 
 		var dayIndex = startDay.clone();
-		while (startDay.diff(dayIndex) >= 0)
+		while (endDay.diff(dayIndex) >= 0)
 		{
 			breakfastStart = dayIndex.clone().hour(6).minute(30);
 			breakfastEnd = dayIndex.clone().hour(9);
@@ -293,7 +299,11 @@ function redrawTimeline(timeline)
 			"cluster" : true,
 			"stackEvents" : true,
 			"showMajorLabels" : false,
-			"width" : "auto"
+			"width" : "auto",
+			"start" : initialStart.toDate(),
+			"end" : initialEnd.toDate(),
+			"min" : visibleStart.toDate(),
+			"max" : visibleEnd.toDate()
 		};
 		
 		// Draw our timeline with the created data and options
