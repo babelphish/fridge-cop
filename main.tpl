@@ -7,7 +7,7 @@
 		<link rel="stylesheet" type="text/css" href="/css/sprites.css">
 		<link rel="stylesheet" type="text/css" href="/css/vex.css"> 
 		<link rel="stylesheet" type="text/css" href="/css/vex-theme-default.css"> 
-		<link rel="stylesheet" type="text/css" href="/css/main.css?v=7">
+		<link rel="stylesheet" type="text/css" href="/css/main.css">
 		<title>Fridge Cop</title>
 	</head>
 
@@ -29,13 +29,13 @@
 		<script type="text/javascript" src="/js/jquery-1.11.1.min.js"></script>
 		<script type="text/javascript" src="/js/vex.combined.min.js"></script>
 		
-		<script type="text/javascript" src="/js/main.js?v=8"></script>
+		<script type="text/javascript" src="/js/main.js"></script>
 		<script type="text/javascript" src="/js/json2.min.js"></script>
 		<script type="text/javascript" src="/js/moment.min.js"></script>
 		<script type="text/javascript" src="/js/moment-timezone.min.js"></script>
 		<script type="text/javascript" src="/js/moment-timezone-data.js"></script>
 		<script type="text/javascript" src="/js/jquery.qtip.min.js"></script>
-		<script type="text/javascript" src="/js/timeline-min.js"></script>
+		<script type="text/javascript" src="/js/timeline.js"></script>
 		<script src="//node.fridge-cop.com/socket.io/socket.io.js"></script>
 
 	</body>
