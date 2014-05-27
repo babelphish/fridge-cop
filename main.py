@@ -25,6 +25,7 @@ fridge_last_opened_cache_key = "fridgeLastOpened"
 door_ancestor_key = ndb.Key("FridgeDoor", "main")
 date_1970 = datetime.datetime.utcfromtimestamp(0)
 node_url = "http://node.fridge-cop.com/"
+node_dev_url = "http://localhost:8081/"
 
 config = ConfigParser.ConfigParser()
 config.read("secure_keys.ini")
@@ -38,11 +39,11 @@ csp_header_addition = ""
 
 if (development()):
         script_tags = getScriptTags(True)
-        csp_header_addition = " localhost:8080 192.168.1.104:8080 "
+        csp_header_addition = " localhost:* ws://localhost:* 192.168.1.104:8080 "
 else:
         script_tags = getScriptTags(False)
 
-csp_header =  "default-src *.fridge-cop.com  localhost:8080 " + csp_header_addition
+csp_header =  "default-src *.fridge-cop.com " + csp_header_addition
 csp_header += " connect-src *.fridge-cop.com:* ws://node.fridge-cop.com:8080 ws://node.fridge-cop.com *.fridge-cop.appspot.com fridge-cop.appspot.com" + csp_header_addition
 csp_header += " script-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com www.google.com" + csp_header_addition
 csp_header += " style-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com" + csp_header_addition
@@ -112,16 +113,15 @@ def get_serialized_timeline_states():
                          })
 
 def broadcast_state(message):
-        final_url = node_url
+        if (development()):
+                final_url = node_dev_url
+        else:
+                final_url = node_url
         
         final_url += "state_change_broadcast?environment="
 
-        if (development()):
-                final_url += "DEV"
-        else:
-                final_url += "PROD"
         try:
-                form_fields =  {
+                form_fields = {
                         "message" : message
                 }
                 form_data = urllib.urlencode(form_fields)

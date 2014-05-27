@@ -4,6 +4,15 @@ runtime: python27
 api_version: 1
 threadsafe: yes
 default_expiration: "10m"
+skip_files:
+- ^(.*/)?#.*#$
+- ^(.*/)?.*~$
+- ^(.*/)?.*\.py[co]$
+- ^(.*/)?.*/RCS/.*$
+- ^(.*/)?\..*$
+- ^(.*/)?.*/bin/.*$
+- ^(.*/)?.*/sensor_broadcast/.*$
+
 
 handlers:
 

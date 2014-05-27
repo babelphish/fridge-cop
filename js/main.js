@@ -4,6 +4,7 @@ var timer = null;
 var receivedStates = [];
 var serverDateFormat = 'YYYY-MM-DD HH:mm:ss.SSS Z'
 var updateURL = 'http://node.fridge-cop.com/';
+var devUpdateURL = 'http://localhost:8081/';
 var timeline = null;
 var currentState = null;
 
@@ -18,18 +19,19 @@ $(function()
 {
 	processState(currentSerializedState);
 	preload(images);
-
-	var endPoint = "state_changes";
-	var reconnect = false;
-	
+		
+	var socketURL = updateURL;	
 	if (document.location.hostname == "localhost")
 	{
-		endPoint = "dev/" + endPoint;
+		socketURL = devUpdateURL;
 	}
+
+	socketURL += "state_changes";
 	
+	var reconnect = false;	
 	if (window.io && io) //otherwise we can't connect to our node :(
 	{
-		var socket = io.connect(updateURL + endPoint);
+		var socket = io.connect(socketURL);
 		socket.on('connect', function()
 		{
 			if (reconnect) //then we disconnected, get the latest state again and it's party time
@@ -54,7 +56,7 @@ $(function()
 	
 	//setup points
 	if (userLoggedIn())
-	{	
+	{
 		displayWhiteBoardPoints();
 		var logoutContent = '<span class="accessText">Log Out</span>';
 		$("#fridgeWhiteboard").on('mouseenter',  function() { $("#whiteboardLink").html(logoutContent) })
@@ -307,7 +309,8 @@ function redrawTimeline(timeline)
 		};
 		
 		// Draw our timeline with the created data and options
-		timeline.draw(data, options);
+		timeline.setOptions(options);
+		timeline.draw(data);
 	}
 }
 
