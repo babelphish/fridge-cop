@@ -25,34 +25,24 @@ $(function()
 	{
 		socketURL = devUpdateURL;
 	}
-
-	socketURL += "state_changes";
 	
-	var reconnect = false;	
-	if (window.io && io) //otherwise we can't connect to our node :(
-	{
-		var socket = io.connect(socketURL);
-		socket.on('connect', function()
+	new StateClient(window).init(socketURL, 
+		function onReconnect()
 		{
-			if (reconnect) //then we disconnected, get the latest state again and it's party time
+			$.get("/current_state").done(function(data)
 			{
-				$.get("/current_state").done(function(data)
-				{
-					new StateData(JSON.parse(data)).apply()
-				})
-				reconnect = false;
-			}
-		});
-		socket.on('new_states', function (data) 
+				new StateData(JSON.parse(data)).apply()
+			})
+		},
+		function onStateChange(data)
 		{
-			processState(JSON.parse(data))
-		});
-		socket.on('disconnect', function()
+			processState(JSON.parse(data));
+		},
+		function onDisconnect()
 		{
 			setFridgeStateUnknown();
-			reconnect = true;
-		});
-	}
+		}
+	)
 	
 	//setup points
 	if (userLoggedIn())
@@ -70,6 +60,45 @@ $(function()
 	
 	attachEvents();	
 })
+
+function StateClient(global)
+{
+	var that = this;	
+	var reconnect = false;
+	var socket = null;
+
+	that.init = function(socketURL, onReconnect, onStateChange, onDisconnect)
+	{
+		socketURL += "state_changes";
+	
+		if (global.io && io) //otherwise we can't connect to our node :(
+		{			
+			socket = io.connect(socketURL);
+	
+			socket.on('connect', function()
+			{
+				if (reconnect) //then we disconnected, get the latest state again and it's party time
+				{
+					onReconnect();
+					reconnect = false;
+				}
+			});
+			
+			socket.on('new_states', function (data)
+			{
+				onStateChange(data);
+			});
+			
+			socket.on('disconnect', function()
+			{
+				onDisconnect();
+				reconnect = true;
+			});
+			
+
+		}
+	}
+}
 
 function displayWhiteBoardPoints()
 {
@@ -302,6 +331,8 @@ function redrawTimeline(timeline)
 			"stackEvents" : true,
 			"showMajorLabels" : false,
 			"width" : "auto",
+			"height" : "auto",
+			"minHeight" : "250",
 			"start" : initialStart.toDate(),
 			"end" : initialEnd.toDate(),
 			"min" : visibleStart.toDate(),

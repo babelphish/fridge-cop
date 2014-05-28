@@ -35,20 +35,20 @@ def development():
         return (os.environ['SERVER_SOFTWARE'].startswith('Development'))
 
 home_template = SimpleTemplate(name='main.tpl')
-csp_header_addition = ""
+csp_header_addition = "; "
 
 if (development()):
         script_tags = getScriptTags(True)
-        csp_header_addition = " localhost:* ws://localhost:* 192.168.1.104:8080 "
+        csp_header_addition = " localhost:* ws://localhost:* 192.168.1.104:8080; "
 else:
         script_tags = getScriptTags(False)
 
 csp_header =  "default-src *.fridge-cop.com " + csp_header_addition
-csp_header += " connect-src *.fridge-cop.com:* ws://node.fridge-cop.com:8080 ws://node.fridge-cop.com *.fridge-cop.appspot.com fridge-cop.appspot.com" + csp_header_addition
-csp_header += " script-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com www.google.com" + csp_header_addition
-csp_header += " style-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com" + csp_header_addition
-csp_header += " font-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com" + csp_header_addition
-csp_header += " img-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com" + csp_header_addition
+csp_header += " connect-src *.fridge-cop.com:* ws://node.fridge-cop.com:8080 ws://node.fridge-cop.com *.fridge-cop.appspot.com fridge-cop.appspot.com " + csp_header_addition
+csp_header += " script-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com www.google.com " + csp_header_addition
+csp_header += " style-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com " + csp_header_addition
+csp_header += " font-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com " + csp_header_addition
+csp_header += " img-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com " + csp_header_addition
 
 print("test")
 
