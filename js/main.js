@@ -57,7 +57,7 @@ $(function()
 		var loginContent = '<span class="accessText">Log In</span>'; 
 		$("#whiteboardLink").html(loginContent); //default blank
 	}
-	
+		
 	attachEvents();	
 })
 
@@ -171,6 +171,13 @@ function attachEvents()
 	
 	$(window).resize(function() 
 	{
+		var timelineContent = $(".vex-content");
+		var windowHeight = $(window).height();
+		var contentHeight = timelineContent.height() + 30;
+		var heightDifference = windowHeight - contentHeight;
+
+		timelineContent.css("margin-top", parseInt(heightDifference / 2))
+	
 		if (timeline)
 		{
 			timeline.checkResize();

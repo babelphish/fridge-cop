@@ -333,11 +333,6 @@
   }
 }
 
-/* line 13, ../sass/vex-theme-default.sass */
-.vex.vex-theme-default {
-  padding-top: 160px;
-  padding-bottom: 160px;
-}
 /* line 17, ../sass/vex-theme-default.sass */
 .vex.vex-theme-default.vex-closing .vex-content {
   animation: vex-flyout 0.5s;
@@ -366,7 +361,7 @@
   font-family: "Helvetica Neue", sans-serif;
   background: #f0f0f0;
   color: #444444;
-  padding: 1em;
+  padding: 15px;
   position: relative;
   margin: 0 auto;
   max-width: 100%;
