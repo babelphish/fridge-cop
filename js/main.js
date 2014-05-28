@@ -164,24 +164,12 @@ function attachEvents()
 		  
 		});
 		
-		// Instantiate our timeline object.
-		timeline = new links.Timeline(document.getElementById('timeline'));
-		redrawTimeline(timeline);
+		redrawTimeline();
 	});
 	
 	$(window).resize(function() 
 	{
-		var timelineContent = $(".vex-content");
-		var windowHeight = $(window).height();
-		var contentHeight = timelineContent.height() + 30;
-		var heightDifference = windowHeight - contentHeight;
-
-		timelineContent.css("margin-top", parseInt(heightDifference / 2))
-	
-		if (timeline)
-		{
-			timeline.checkResize();
-		}
+		fitToWindow();
 	})
 	
 	$("#lastOpenedOverlay").qtip({
@@ -202,11 +190,30 @@ function attachEvents()
 	});
 }
 
+function fitToWindow()
+{
+		var timelineContent = $(".vex-content");
+		var windowHeight = $(window).height();
+		var contentHeight = timelineContent.height() + 30;
+		var heightDifference = windowHeight - contentHeight;
+
+		timelineContent.css("margin-top", parseInt(heightDifference / 2))
+	
+		if (timeline)
+		{
+			timeline.checkResize();
+		}
+}
+
 timelineRequests = {};
 var requestIndex = 0;
 
-function redrawTimeline(timeline) 
+function redrawTimeline() 
 {
+	// Instantiate our timeline object.
+	timeline = new links.Timeline(document.getElementById('timeline'));
+
+	fitToWindow();
 	$.each(timelineRequests, function(index, request) 
 	{
 		request.abort();
@@ -227,6 +234,7 @@ function redrawTimeline(timeline)
 				$("#timeline").show();
 
 				renderTimeline(JSON.parse(timelineStates));
+				
 			})
 		.always(
 			function()
@@ -339,7 +347,8 @@ function redrawTimeline(timeline)
 			"showMajorLabels" : false,
 			"width" : "auto",
 			"height" : "auto",
-			"minHeight" : "250",
+			"minHeight" : 250,
+			"groupMinHeight" : 20,
 			"start" : initialStart.toDate(),
 			"end" : initialEnd.toDate(),
 			"min" : visibleStart.toDate(),
@@ -349,6 +358,7 @@ function redrawTimeline(timeline)
 		// Draw our timeline with the created data and options
 		timeline.setOptions(options);
 		timeline.draw(data);
+		fitToWindow();
 	}
 }
 
