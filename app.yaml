@@ -12,7 +12,7 @@ skip_files:
 - ^(.*/)?\..*$
 - ^(.*/)?.*/bin/.*$
 - ^(.*/)?.*/sensor_broadcast/.*$
-
+- ^(.*/)?.*/stress_test/.*$
 
 handlers:
 

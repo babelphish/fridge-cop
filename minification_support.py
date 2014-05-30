@@ -12,6 +12,7 @@ def getScriptTags(development):
         random_num = random.randrange(1,100000000)
         scripts.append('<script type="text/javascript" src="/js/jquery-1.11.1.min.js?b=' + str(random_num)  + '"></script>')
         scripts.append('<script type="text/javascript" src="/js/vex.combined.min.js?b=' + str(random_num) + '"></script>')
+	scripts.append('<script type="text/javascript" src="/js/state_client.js?b=' + str(random_num) + '"></script>')
 	scripts.append('<script type="text/javascript" src="/js/main.js?b=' + str(random_num) + '"></script>')
 	scripts.append('<script type="text/javascript" src="/js/json2.min.js?b=' + str(random_num) + '"></script>')
 	scripts.append('<script type="text/javascript" src="/js/moment.min.js?b=' + str(random_num) + '"></script>')
@@ -22,8 +23,10 @@ def getScriptTags(development):
     else:
         scripts.append('<script type="text/javascript" src="/js/lib.min.js?b=' + str(consts.BUILD_NUMBER) + '"></script>')
 
-
-    scripts.append('<script src="//node.fridge-cop.com/socket.io/socket.io.js"></script>')
-
+    if (development):
+        scripts.append('<script src="//localhost:8081/socket.io/socket.io.js"></script>')
+    else:
+        scripts.append('<script src="//node.fridge-cop.com/socket.io/socket.io.js"></script>')
+        
 
     return os.linesep.join(scripts)

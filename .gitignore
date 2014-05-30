@@ -1,2 +1,3 @@
 *.pyc
 secure_keys.ini
+node_modules/

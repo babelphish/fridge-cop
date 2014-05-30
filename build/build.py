@@ -16,6 +16,7 @@ f.close()
 
 process = subprocess.Popen(["java", "-jar", r"..\bin\compiler.jar", "--js", "jquery-1.11.1.min.js",
                 "--js", "vex.combined.min.js",
+                "--js", "state_client.js",
                 "--js", "main.js",
                 "--js", "json2.min.js",
                 "--js", "moment.min.js",
