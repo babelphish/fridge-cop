@@ -1,0 +1,10 @@
+js_files = ["jquery-1.11.1.min.js",
+            "vex.combined.min.js",
+            "state_client.js",
+            "main.js",
+            "json2.min.js",
+            "moment.min.js",
+            "moment-timezone.min.js",
+            "moment-timezone-data.js",
+            "timeline.js",
+            "jquery.qtip.min.js"]
