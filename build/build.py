@@ -10,11 +10,10 @@ config["version"]["build"] = str(build_number + 1)
 with open('build.ini', 'w') as configfile:
     config.write(configfile)
 
-f = open('..\consts.py', 'w')
+f = open('..\generated_data.py', 'w')
 f.write("BUILD_NUMBER = " + str(build_number))
 f.close()
 
-process = subprocess.Popen(["java", "-jar", r"..\bin\compiler.jar", "--js", "jquery-1.11.1.min.js",
                 "--js", "vex.combined.min.js",
                 "--js", "state_client.js",
                 "--js", "main.js",
@@ -24,6 +23,11 @@ process = subprocess.Popen(["java", "-jar", r"..\bin\compiler.jar", "--js", "jqu
                 "--js", "moment-timezone-data.js",
                 "--js", "timeline.js",
                 "--js", "jquery.qtip.min.js",
+
+
+
+
+process = subprocess.Popen(["java", "-jar", r"..\bin\compiler.jar", "--js", "jquery-1.11.1.min.js",
                 "--create_source_map", "map.js",
                 "--compilation_level=SIMPLE",
                 "--js_output_file", "lib.min.js"], cwd=r"..\js"

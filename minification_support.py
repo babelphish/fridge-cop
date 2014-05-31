@@ -1,6 +1,6 @@
 import random
 import os
-import consts
+import generated_data
 
 def getScriptTags(development):
     scripts = []
@@ -20,13 +20,9 @@ def getScriptTags(development):
 	scripts.append('<script type="text/javascript" src="/js/moment-timezone-data.js?b=' + str(random_num) + '"></script>')
 	scripts.append('<script type="text/javascript" src="/js/jquery.qtip.min.js?b=' + str(random_num) + '"></script>')
 	scripts.append('<script type="text/javascript" src="/js/timeline.js?b=' + str(random_num) + '"></script>')
-    else:
-        scripts.append('<script type="text/javascript" src="/js/lib.min.js?b=' + str(consts.BUILD_NUMBER) + '"></script>')
-
-    if (development):
         scripts.append('<script src="//localhost:8081/socket.io/socket.io.js"></script>')
     else:
+        scripts.append('<script type="text/javascript" src="/js/lib.min.js?b=' + str(consts.BUILD_NUMBER) + '"></script>')
         scripts.append('<script src="//node.fridge-cop.com/socket.io/socket.io.js"></script>')
-        
 
     return os.linesep.join(scripts)
