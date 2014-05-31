@@ -134,7 +134,7 @@ table {
 
 #lastOpenedTime
 {
-	background: url("../images/clock.png") no-repeat center;
+	background: url("../images/clock2.png") no-repeat center;
 	background-size: contain;
 	line-height: 1.4em;
 	text-align: center;
@@ -347,8 +347,8 @@ table {
 
 div.meal
 {
-	background-color: cornflowerblue;
-	color: white;
+	background-color: cornflowerblue !important;
+	color: white !important;
 	text-align: center;
 	font-size: 0.8em;
 	line-height: 0.8em;
