@@ -2,12 +2,7 @@
 <html>
 	<head>
 		<meta name="viewport" content="width=365, initial-scale=1" >
-		<link rel="stylesheet" type="text/css" href="/css/jquery.qtip.min.css">
-		<link rel="stylesheet" type="text/css" href="/css/timeline.css">
-		<link rel="stylesheet" type="text/css" href="/css/sprites.css">
-		<link rel="stylesheet" type="text/css" href="/css/vex.css"> 
-		<link rel="stylesheet" type="text/css" href="/css/vex-theme-default.css"> 
-		<link rel="stylesheet" type="text/css" href="/css/main.css">
+		{{!style_tags}}
 		<title>Fridge Cop</title>
 	</head>
 

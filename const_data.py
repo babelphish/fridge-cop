@@ -8,3 +8,11 @@ js_files = ["jquery-1.11.1.min.js",
             "moment-timezone-data.js",
             "timeline.js",
             "jquery.qtip.min.js"]
+
+css_files = ["jquery.qtip.min.css",
+             "timeline.css",
+             "sprites.css",
+             "vex.css",
+             "vex-theme-default.css",
+             "main.css"
+            ]

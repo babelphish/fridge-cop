@@ -4,7 +4,7 @@ from fridge_model import FridgeDoorState
 from fridge_door import FridgeDoor
 from google.appengine.ext import ndb
 from datetime import timedelta
-from minification_support import getScriptTags
+from minification_support import getScriptTags, getStyleTags
 import ConfigParser
 import logging
 import datetime
@@ -31,30 +31,47 @@ config = ConfigParser.ConfigParser()
 config.read("secure_keys.ini")
 state_update_key = config.get("secure_keys", "state_update_key")
 
-def development():
-        return (os.environ['SERVER_SOFTWARE'].startswith('Development'))
+is_dev = os.environ['SERVER_SOFTWARE'].startswith('Development')
 
 home_template = SimpleTemplate(name='main.tpl')
-csp_header_addition = "; "
 
-if (development()):
-        script_tags = getScriptTags(True)
-        csp_header_addition = " localhost:* ws://localhost:* 192.168.1.104:8080; "
-else:
-        script_tags = getScriptTags(False)
+def generate_csp_header(development):
+        csp_header_addition = "; "
 
-csp_header =  "default-src *.fridge-cop.com " + csp_header_addition
-csp_header += " connect-src *.fridge-cop.com:* ws://node.fridge-cop.com:8080 ws://node.fridge-cop.com *.fridge-cop.appspot.com fridge-cop.appspot.com " + csp_header_addition
-csp_header += " script-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com www.google.com " + csp_header_addition
-csp_header += " style-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com " + csp_header_addition
-csp_header += " font-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com " + csp_header_addition
-csp_header += " img-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com " + csp_header_addition
+        if (development):
+                csp_header_addition = " localhost:* ws://localhost:* 192.168.1.104:8080; "
+        csp_header =  "default-src *.fridge-cop.com " + csp_header_addition
+        csp_header += " connect-src *.fridge-cop.com:* ws://node.fridge-cop.com:8080 ws://node.fridge-cop.com *.fridge-cop.appspot.com fridge-cop.appspot.com " + csp_header_addition
+        csp_header += " script-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com www.google.com " + csp_header_addition
+        csp_header += " style-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com " + csp_header_addition
+        csp_header += " font-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com " + csp_header_addition
+        csp_header += " img-src *.fridge-cop.com:* *.fridge-cop.appspot.com fridge-cop.appspot.com " + csp_header_addition
 
-print("test")
+        return csp_header
+
+
+dev_script_tags = getScriptTags(True)
+prod_script_tags = getScriptTags(False)
+
+dev_style_tags = getStyleTags(True)
+prod_style_tags = getStyleTags(False)
+
+dev_csp_header = generate_csp_header(True)
+prod_csp_header = generate_csp_header(False)
+
 
 @bottle.route('/')
 def home():
         try:
+                script_tags = prod_script_tags
+                style_tags = prod_style_tags
+                csp_header = prod_csp_header
+                if (is_dev):
+                        csp_header = dev_csp_header
+                        if (request.query.mode != "PROD"):
+                                script_tags = dev_script_tags
+                                style_tags = dev_style_tags
+
                 response.set_header("Content-Security-Policy", csp_header)
                 user = users.get_current_user()
 
@@ -72,12 +89,17 @@ def home():
                 elif (current_state.state == 2):
                         state_class = "fridgeStateClosed"
 
+
                 return home_template.render(script_tags = script_tags,
+                                            style_tags = style_tags,
                                             fridge_state = state_class,
                                             user_url = url)
 
         except Exception as e:
-                return str(e)
+                if (is_dev):
+                        return str(e)
+                else:
+                        return ":("
 
 @bottle.route('/change_state')
 def change_state():
@@ -113,7 +135,7 @@ def get_serialized_timeline_states():
                          })
 
 def broadcast_state(message):
-        if (development()):
+        if (is_dev):
                 final_url = node_dev_url
         else:
                 final_url = node_url
