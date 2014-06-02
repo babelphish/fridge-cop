@@ -18,7 +18,6 @@
 
 			</div>
 		</div>
-
 		{{!script_tags}}
 	</body>
 </html>

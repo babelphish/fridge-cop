@@ -7,7 +7,8 @@ js_files = ["jquery-1.11.1.min.js",
             "moment-timezone.min.js",
             "moment-timezone-data.js",
             "timeline.js",
-            "jquery.qtip.min.js"]
+            "jquery.qtip.min.js",
+            "socket.io.js"]
 
 css_files = ["jquery.qtip.min.css",
              "timeline.css",

@@ -15,12 +15,9 @@ def getScriptTags(development):
     if (development):
         random_num = random.randrange(1,100000000)
         for file_name in const_data.js_files:
-            scripts.append(script_tag_template.format(file_name, str(random_num)))
-            
-        scripts.append('<script src="//localhost:8081/socket.io/socket.io.js"></script>')
+            scripts.append(script_tag_template.format(file_name, str(random_num)))            
     else:
         scripts.append(script_tag_template.format("lib.min.js", str(generated_data.BUILD_NUMBER)))
-        scripts.append('<script src="//node.fridge-cop.com/socket.io/socket.io.js"></script>')
 
     return os.linesep.join(scripts)
 
