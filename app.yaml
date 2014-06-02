@@ -3,7 +3,7 @@ version: 6
 runtime: python27
 api_version: 1
 threadsafe: yes
-default_expiration: "10m"
+default_expiration: "365d"
 skip_files:
 - ^(.*/)?#.*#$
 - ^(.*/)?.*~$
@@ -19,21 +19,23 @@ skip_files:
 handlers:
 
 - url: /css
-  expiration: "1h"
+  expiration: "365d"
   static_dir: css
 
 - url: /images
-  expiration: "1d"
+  expiration: "365d"
   static_dir: images
 
 - url: /js
+  expiration: "365d"
   static_dir: js
   
 - url: /fonts
-  expiration: "1d"
+  expiration: "365d"
   static_dir: fonts  
  
 - url: /favicon\.ico
+  expiration: "7d"
   static_files: favicon.ico
   upload: favicon\.ico
 
