@@ -319,6 +319,7 @@ function redrawTimeline()
 		
 		// Draw our timeline with the created data and options
 		timeline.setOptions(options);
+		links.events.addListener(timeline, 'rangechange', fitToWindow);
 		timeline.draw(data);
 		fitToWindow();
 	}
