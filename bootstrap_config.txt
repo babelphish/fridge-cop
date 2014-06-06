@@ -1,0 +1,7 @@
+Components: Navs
+Javascript Components: component animations
+Utilities: basic utilities
+
+Linked to components: Togglable tabs
+Magic: Transitions
+

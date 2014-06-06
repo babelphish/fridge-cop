@@ -1,6 +1,5 @@
 div.timeline-frame {
     -moz-box-sizing: border-box;
-    border: 1px solid #bebebe;
     box-sizing: border-box;
     overflow: hidden;
     position: relative;

@@ -106,27 +106,40 @@ function attachEvents()
 		}
 	})
 	
+	var statsPopupContent = 
+		'<ul class="nav nav-tabs">' +
+			'<li class="active"><a href="#leaderboard-tab" data-toggle="tab">Top 10 Leaderboard</a></li>' +
+			'<li id="timeline-button"><a href="#timeline-tab" data-toggle="tab">Timeline</a></li>' +
+		'</ul>' +
+		'<div class="tab-content">' +
+			'<div class="tab-pane active" id="leaderboard-tab"><div id="leaderboard"></div></div>' +
+			'<div class="tab-pane" id="timeline-tab"><div id="timeline"></div></div>' +
+		'</div>'
+	
 	$("#statPopupButton").on("click", function()
 	{
 		vex.dialog.open({
-			message: '<div id="timeline" class="hidden">test</div>',
-		  buttons: [
-		  ],
-		  callback: function(data) 
-		  {
-		  },
+			message: statsPopupContent,
+		  buttons: [ ],
+		  callback: function(data) {},
 		  contentCSS :
 		  {
 			"width" : 700
 		  },
-		  css :
-		  {
-		  
-		  }
-		  
+		  css :{}
 		});
-		
-		redrawTimeline();
+
+		fitToWindow();
+		redrawTimeline();		
+		redrawLeaderboard();
+	});
+	
+	$("body").on("click", "#timeline-button", function()
+	{
+		setTimeout(function() 
+		{
+			fitToWindow();
+		}, 100)
 	});
 	
 	$(window).resize(function() 
@@ -154,21 +167,74 @@ function attachEvents()
 
 function fitToWindow()
 {
-		var timelineContent = $(".vex-content");
-		var windowHeight = $(window).height();
-		var contentHeight = timelineContent.height() + 30;
-		var heightDifference = windowHeight - contentHeight;
+	var timelineContent = $(".vex-content");
+	var windowHeight = $(window).height();
+	var contentHeight = timelineContent.height() + 30;
+	var heightDifference = windowHeight - contentHeight;
 
-		timelineContent.css("margin-top", parseInt(heightDifference / 2))
+	timelineContent.css("margin-top", parseInt(heightDifference / 2));
 	
-		if (timeline)
-		{
-			timeline.checkResize();
-		}
+	if (timeline)
+	{
+		timeline.checkResize();
+		timeline.checkResize();
+	}
+	
 }
 
-timelineRequests = {};
+var timelineRequests = {};
 var requestIndex = 0;
+
+var leaderboardRequests = {};
+var leaderboardRequestIndex = 0;
+
+
+function redrawLeaderboard()
+{
+	$.each(leaderboardRequests, function(index, request) 
+	{
+		request.abort();
+	});
+	leaderboardRequestIndex++;
+
+	makeRequest(leaderboardRequestIndex);
+	
+	function makeRequest(leaderboardRequestIndex)
+	{
+	
+		leaderboardRequests[leaderboardRequestIndex] = 
+		$.get("/point_ranks")
+		.done(
+			function(data)
+			{
+				data = JSON.parse(data);
+				if (data.error == false)
+				{
+				
+				}
+				renderLeaderboard(data.ranks, data.startRank);
+				
+			})
+		.always(
+			function()
+			{
+				delete leaderboardRequests[leaderboardRequestIndex]
+			})
+	}
+	
+	function renderLeaderboard(ranks, startRank)
+	{		
+		var table = $('<table class="table"><thead><tr><th>Rank</th><th>Name</th><th>Points</th></tr></thead><tbody></tbody></table>')
+		var interior = table.find("tbody")
+
+		$(ranks).each(function(index, rank)
+		{
+			$('<tr><td>' + (index + startRank)  + '</td><td>' + rank.n  + '</td><td>' + rank.p  + '</td></tr>').appendTo(interior);
+		});
+
+		table.appendTo("#leaderboard");		
+	}
+}
 
 function redrawTimeline() 
 {

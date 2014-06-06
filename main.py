@@ -120,7 +120,6 @@ def change_state():
         except Exception as e:
                 return str(e)
 
-#get the correct delayed state
 @bottle.route('/timeline_states')
 def get_serialized_timeline_states():
         timeline_start_date = datetime.datetime.now() - datetime.timedelta(days = 1)
@@ -133,6 +132,30 @@ def get_serialized_timeline_states():
                             "start" : str(timeline_start_date),
                             "end" : str(datetime.datetime.now() + datetime.timedelta(minutes = 10))
                          })
+
+#get the correct delayed state
+@bottle.route('/point_ranks')
+def get_serialized_point_ranks():
+        points = UserPoints.query().order(-UserPoints.all_time_total).fetch(10)
+        user = users.get_current_user()
+
+        ranks = []
+        for point in points:
+                result = {
+                        "p" : point.all_time_total,
+                        "n" : point.visible_name
+                }
+
+#                if (user.user_id == point.user_id):
+#                        result["self"] = True
+
+                ranks.append(result)
+
+        return json.dumps({
+                                "error" : False,
+                                "ranks" : ranks,
+                                "startRank" : 1
+                        })
 
 def broadcast_state(message):
         if (is_dev):

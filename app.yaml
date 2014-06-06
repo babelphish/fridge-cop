@@ -26,6 +26,9 @@ handlers:
   expiration: "365d"
   static_dir: images
 
+- url: /html
+  static_dir: html
+  
 - url: /js
   expiration: "365d"
   static_dir: js

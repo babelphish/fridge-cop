@@ -1,6 +1,7 @@
 js_files = ["jquery-1.11.1.min.js",
             "vex.combined.min.js",
             "state_client.js",
+            "bootstrap.js",
             "main.js",
             "json2.min.js",
             "moment.min.js",
@@ -10,7 +11,8 @@ js_files = ["jquery-1.11.1.min.js",
             "jquery.qtip.min.js",
             "socket.io.js"]
 
-css_files = ["jquery.qtip.min.css",
+css_files = ["bootstrap.css",
+            "jquery.qtip.min.css",
              "timeline.css",
              "sprites.css",
              "vex.css",
