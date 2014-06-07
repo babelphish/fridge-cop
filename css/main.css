@@ -319,11 +319,65 @@ table {
 #timeline,#leaderboard
 {
 	width: 100%;
-	min-height: 250px;
+	min-height: 262px;
 	border-left: 1px solid #dddddd;
 	border-right: 1px solid #dddddd;
 	border-bottom: 1px solid #dddddd;
 	background-color: white;
+}
+
+#leaderboard
+{
+	height: 262px;
+	overflow-y: auto;
+}
+
+#leaderboard > table td
+{
+	line-height: 1.2em;
+}
+
+#leaderboard button.edit-button
+{
+	position: relative;
+	display: none;
+}
+
+#leaderboard span.name-text
+{
+	margin-right: 15px;
+}
+
+#leaderboard tr.anonymous button.edit-button
+{
+	display: inline !important;
+}
+
+#leaderboard tr:hover button.edit-button
+{
+	display: inline !important;
+}
+
+#leaderboard span.glyphicon-star
+{
+	color: orange;
+	line-height: 1.2em;
+	float: right;
+}
+
+#leaderboard th.rank-column
+{
+	width: 50px;
+}
+
+#leaderboard th.star-column
+{
+	width: 20px;
+}
+
+#leaderboard th.points-column
+{
+	width: 100px;
 }
 
 .vex-content

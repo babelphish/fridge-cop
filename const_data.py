@@ -12,6 +12,7 @@ js_files = ["jquery-1.11.1.min.js",
             "socket.io.js"]
 
 css_files = ["bootstrap.css",
+             "bootstrap-theme.css",
             "jquery.qtip.min.css",
              "timeline.css",
              "sprites.css",

@@ -217,12 +217,29 @@ function redrawLeaderboard()
 	
 	function renderLeaderboard(ranks, startRank)
 	{		
-		var table = $('<table class="table"><thead><tr><th>Rank</th><th>Name</th><th>Points</th></tr></thead><tbody></tbody></table>')
+		var table = $('<table class="table table-striped table-hover"><thead><tr>' +
+					  '<th class="rank-column">Rank</th>' +
+					  '<th class="star-column">&nbsp;</th>' +
+					  '<th>Name</th>' +
+					  '<th class="points-column">Points</th>' +
+					  '</tr></thead><tbody></tbody></table>')
 		var interior = table.find("tbody")
-
+		
 		$(ranks).each(function(index, rank)
 		{
-			$('<tr><td>' + (index + startRank)  + '</td><td>' + rank.n  + '</td><td>' + rank.p  + '</td></tr>').appendTo(interior);
+			var glyph = "";
+			var editButton = "";
+			var name = '<span class="name-text">' + rank.n + '</span>';
+			if (rank.s)
+			{
+				glyph = '<span class="glyphicon glyphicon-star"></span>';
+				name = '<input type="email" class="form-control" id="exampleInputEmail2" placeholder="Enter email">';
+				editButton = '<button type="button" class="btn btn-default btn-xs edit-button"><span class="glyphicon glyphicon-pencil"></span> Edit</button>';
+			}
+			row = $('<tr><td>' + (index + startRank) + '</td>' +
+				'<td>' + glyph + '</td>' + 
+				'<td>' + name + editButton + '</td>' +
+				'<td>' + rank.p  + '</td></tr>').appendTo(interior);
 		});
 
 		table.appendTo("#leaderboard");		

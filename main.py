@@ -138,6 +138,9 @@ def get_serialized_timeline_states():
 def get_serialized_point_ranks():
         points = UserPoints.query().order(-UserPoints.all_time_total).fetch(10)
         user = users.get_current_user()
+        user_id = "nope"
+        if (user is not None):
+                user_id = user.user_id()
 
         ranks = []
         for point in points:
@@ -145,9 +148,8 @@ def get_serialized_point_ranks():
                         "p" : point.all_time_total,
                         "n" : point.visible_name
                 }
-
-#                if (user.user_id == point.user_id):
-#                        result["self"] = True
+                if (user_id == point.user_id):
+                        result["s"] = True
 
                 ranks.append(result)
 
