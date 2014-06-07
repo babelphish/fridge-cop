@@ -29,14 +29,17 @@ def main():
     js_process.wait()
     
 def minify_css():
-    css_build_args = ["java", "-jar", r"..\bin\yuicompressor-2.4.8.jar"]
+    #css_build_args = ["java", "-jar", r"..\bin\yuicompressor-2.4.8.jar"]
 
     result = ""
     for file_name in const_data.css_files:
-        process_css_file_args = copy(css_build_args)
-        process_css_file_args.append("..\\css\\" + file_name)
-        result += check_output(process_css_file_args).decode("utf-8") + os.linesep
-
+        with open('..\\css\\' + file_name, 'r') as f:
+            read_data = f.read()
+            result += read_data
+        f.closed
+        #process_css_file_args = copy(css_build_args)
+        #process_css_file_args.append("..\\css\\" + file_name)
+        #result += check_output(process_css_file_args).decode("utf-8") + os.linesep
 
     print (result)
     f = open('..\css\main.min.css', 'w')
