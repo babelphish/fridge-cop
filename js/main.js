@@ -120,7 +120,8 @@ function attachEvents()
 	{
 		vex.dialog.open({
 			message: statsPopupContent,
-		  buttons: [ ],
+		  showCloseButton : true,
+		  buttons : [],
 		  callback: function(data) {},
 		  contentCSS :
 		  {
@@ -129,8 +130,7 @@ function attachEvents()
 		  css :{}
 		});
 
-		fitToWindow();
-		redrawTimeline();		
+		redrawTimeline();
 		redrawLeaderboard();
 	});
 	
@@ -138,13 +138,13 @@ function attachEvents()
 	{
 		setTimeout(function() 
 		{
-			fitToWindow();
+			resizeTimeline();
 		}, 100)
 	});
 	
 	$(window).resize(function() 
 	{
-		fitToWindow();
+		resizeTimeline();
 	})
 	
 	$("#lastOpenedOverlay").qtip({
@@ -165,15 +165,8 @@ function attachEvents()
 	});
 }
 
-function fitToWindow()
-{
-	var timelineContent = $(".vex-content");
-	var windowHeight = $(window).height();
-	var contentHeight = timelineContent.height() + 30;
-	var heightDifference = windowHeight - contentHeight;
-
-	timelineContent.css("margin-top", parseInt(heightDifference / 2));
-	
+function resizeTimeline()
+{	
 	if (timeline)
 	{
 		timeline.checkResize();
@@ -241,7 +234,6 @@ function redrawTimeline()
 	// Instantiate our timeline object.
 	timeline = new links.Timeline(document.getElementById('timeline'));
 
-	fitToWindow();
 	$.each(timelineRequests, function(index, request) 
 	{
 		request.abort();
@@ -385,9 +377,9 @@ function redrawTimeline()
 		
 		// Draw our timeline with the created data and options
 		timeline.setOptions(options);
-		links.events.addListener(timeline, 'rangechange', fitToWindow);
+//		links.events.addListener(timeline, 'rangechange', fitToWindow);
 		timeline.draw(data);
-		fitToWindow();
+		resizeTimeline();
 	}
 }
 
