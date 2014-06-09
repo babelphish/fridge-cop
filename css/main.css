@@ -335,12 +335,7 @@ table {
 #leaderboard > table td
 {
 	line-height: 1.2em;
-}
-
-#leaderboard button.edit-button
-{
-	position: relative;
-	display: none;
+	vertical-align: middle;
 }
 
 #leaderboard span.name-text
@@ -348,14 +343,24 @@ table {
 	margin-right: 15px;
 }
 
-#leaderboard tr.anonymous button.edit-button
+#leaderboard .name-entry
 {
-	display: inline !important;
+	display: none;
 }
 
-#leaderboard tr:hover button.edit-button
+#leaderboard table > tbody > tr.editable
 {
-	display: inline !important;
+	cursor: pointer;
+}
+
+#leaderboard table > tbody > tr.entry-mode .name-entry
+{
+	display: block;
+}
+
+#leaderboard table > tbody > tr.entry-mode .name-text
+{
+	display: none;
 }
 
 #leaderboard span.glyphicon-star
@@ -370,6 +375,11 @@ table {
 	width: 50px;
 }
 
+#leaderboard td.rank-column
+{
+	text-align: right;
+}
+
 #leaderboard th.star-column
 {
 	width: 20px;
@@ -377,8 +387,15 @@ table {
 
 #leaderboard th.points-column
 {
-	width: 100px;
+	width: 70px;
 }
+
+#leaderboard td.points-column
+{
+	text-align: right;
+}
+
+
 
 .vex-content
 {

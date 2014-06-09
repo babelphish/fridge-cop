@@ -12,8 +12,10 @@ import json
 import uuid
 import sys, os
 import urllib
+import re
 from user_points import UserPoints
 from user_point import UserPoint
+from user_profile import UserProfile
 from text import Text
 
 # Run the Bottle wsgi application. We don't need to call run() since our
@@ -26,6 +28,7 @@ door_ancestor_key = ndb.Key("FridgeDoor", "main")
 date_1970 = datetime.datetime.utcfromtimestamp(0)
 node_url = "http://node.fridge-cop.com/"
 node_dev_url = "http://localhost:8081/"
+visible_name_pattern = re.compile("^[\w\d ]+$", re.UNICODE)
 
 config = ConfigParser.ConfigParser()
 config.read("secure_keys.ini")
@@ -89,7 +92,6 @@ def home():
                 elif (current_state.state == 2):
                         state_class = "fridgeStateClosed"
 
-
                 return home_template.render(script_tags = script_tags,
                                             style_tags = style_tags,
                                             fridge_state = state_class,
@@ -144,9 +146,12 @@ def get_serialized_point_ranks():
 
         ranks = []
         for point in points:
+                profile = UserProfile.get_or_insert(point.user_id,
+                                                    user_id = point.user_id)
+
                 result = {
                         "p" : point.all_time_total,
-                        "n" : point.visible_name
+                        "n" : profile.visible_name
                 }
                 if (user_id == point.user_id):
                         result["s"] = True
@@ -251,6 +256,45 @@ def increment_user_point(user, current_fridge_entity):
 def get_user_points(user):
         user_id = str(user.user_id())
         return UserPoints.get_or_insert(user_id, user_id = user_id, email_address=user.email())
+
+@bottle.route('/set_name', method='POST')
+def set_user_name():
+        try:
+                new_name = request.forms.get('name')
+                if (new_name is None):
+                        return { "error" : True,
+                                 "errorMessage" : "'new_name' param must be set." }
+
+                if (len(new_name) > 20):
+                        return { "error" : True,
+                                 "errorMessage" : "Name can't be more than 30 characters." }
+                
+                if (not visible_name_pattern.match(new_name)):
+                        return { "error" : True,
+                                 "errorMessage" : "Name must be alphanumeric." }
+
+                user = users.get_current_user()
+                id_to_change = str(user.user_id())
+
+                #if we're an admin, allow changing anyone's name with the right id
+                if (user and users.is_current_user_admin() and request.forms.get('id') is not None):
+                        id_to_change = request.forms.get('id')
+
+                #get profile and set new name
+                profile = UserProfile.get_or_insert(id_to_change,
+                                          user_id = id_to_change,
+                                          visible_name = new_name)
+                profile.visible_name = new_name
+                profile.put()
+
+                return { "error" : False
+                        }
+        except Exception as e:
+                if (is_dev):
+                        return str(e)
+                else:
+                        return ":("
+                
 
 @bottle.route('/current_state')
 def get_serialized_current_state():

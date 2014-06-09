@@ -141,6 +141,27 @@ function attachEvents()
 			resizeTimeline();
 		}, 100)
 	});
+
+	$("body").on("click", "#leaderboard tr.editable", function()
+	{
+		$(this).addClass("entry-mode");
+	});
+
+	$("body").on("click", ".save-username-button", function()
+	{
+		var row = $(this).parents("tr.entry-mode");
+		var newName = row.find(".name-entry input").val();
+		$.post("/set_name", 
+			  { "name" : newName })
+		.done(function(data) 
+		{ 
+			if (data.error == false)
+			{
+				row.find(".name-text").text(newName);
+				row.removeClass("entry-mode");
+			}
+		})
+	});
 	
 	$(window).resize(function() 
 	{
@@ -224,25 +245,41 @@ function redrawLeaderboard()
 					  '<th class="points-column">Points</th>' +
 					  '</tr></thead><tbody></tbody></table>')
 		var interior = table.find("tbody")
-		
+
 		$(ranks).each(function(index, rank)
 		{
 			var glyph = "";
 			var editButton = "";
+			var noNameEntered = (rank.n == 'Anonymous FridgeClicker');
 			var name = '<span class="name-text">' + rank.n + '</span>';
+
+			var nameEntry =
+			'<div class="name-entry">' +
+				'<div class="input-group">' +
+					'<input type="text" class="form-control" placeholder="Enter your username">' +
+					'<span class="input-group-btn">' +
+						'<button class="btn btn-default save-username-button" type="button">Save!</button>' +
+					'</span>' +
+				'</div>' +
+			'</div>';
+			
 			if (rank.s)
 			{
+				name += nameEntry; //add the possibility to set a username
 				glyph = '<span class="glyphicon glyphicon-star"></span>';
-				name = '<input type="email" class="form-control" id="exampleInputEmail2" placeholder="Enter email">';
-				editButton = '<button type="button" class="btn btn-default btn-xs edit-button"><span class="glyphicon glyphicon-pencil"></span> Edit</button>';
 			}
 			row = $('<tr><td>' + (index + startRank) + '</td>' +
 				'<td>' + glyph + '</td>' + 
-				'<td>' + name + editButton + '</td>' +
+				'<td>' + name + '</td>' +
 				'<td>' + rank.p  + '</td></tr>').appendTo(interior);
+			if (rank.s && noNameEntered)
+				row.addClass('entry-mode');
+				
+			if (rank.s)
+				row.addClass('editable');
 		});
 
-		table.appendTo("#leaderboard");		
+		table.appendTo("#leaderboard");
 	}
 }
 
