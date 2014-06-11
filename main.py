@@ -5,6 +5,7 @@ from fridge_door import FridgeDoor
 from google.appengine.ext import ndb
 from datetime import timedelta
 from minification_support import getScriptTags, getStyleTags
+from const_data import *
 import ConfigParser
 import logging
 import datetime
@@ -28,7 +29,8 @@ door_ancestor_key = ndb.Key("FridgeDoor", "main")
 date_1970 = datetime.datetime.utcfromtimestamp(0)
 node_url = "http://node.fridge-cop.com/"
 node_dev_url = "http://localhost:8081/"
-visible_name_pattern = re.compile("^[\w\d ]+$", re.UNICODE)
+"^{0}{{{1},{2}}}$$".format(visible
+visible_name_pattern = re.compile(, re.UNICODE)
 
 config = ConfigParser.ConfigParser()
 config.read("secure_keys.ini")
@@ -151,7 +153,7 @@ def get_serialized_point_ranks():
 
                 result = {
                         "p" : point.all_time_total,
-                        "n" : profile.visible_name
+                        "n" : profile.sanitized_visible_name()
                 }
                 if (user_id == point.user_id):
                         result["s"] = True
@@ -265,7 +267,7 @@ def set_user_name():
                         return { "error" : True,
                                  "errorMessage" : "'new_name' param must be set." }
 
-                if (len(new_name) > 20):
+                if (len(new_name) > 30):
                         return { "error" : True,
                                  "errorMessage" : "Name can't be more than 30 characters." }
                 

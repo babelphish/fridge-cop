@@ -20,3 +20,7 @@ css_files = ["bootstrap.css",
              "vex-theme-default.css",
              "main.css"
             ]
+
+min_visible_name_length = 5
+max_visible_name_length = 40
+visible_name_validation_expression = "[\S ]"
