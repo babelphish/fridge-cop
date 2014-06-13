@@ -29,8 +29,9 @@ door_ancestor_key = ndb.Key("FridgeDoor", "main")
 date_1970 = datetime.datetime.utcfromtimestamp(0)
 node_url = "http://node.fridge-cop.com/"
 node_dev_url = "http://localhost:8081/"
-"^{0}{{{1},{2}}}$$".format(visible
-visible_name_pattern = re.compile(, re.UNICODE)
+visible_name_pattern = re.compile("^{0}{{{1},{2}}}$$".format(visible_name_validation_expression,
+                                                           min_visible_name_length,
+                                                           max_visible_name_length), re.UNICODE)
 
 config = ConfigParser.ConfigParser()
 config.read("secure_keys.ini")
@@ -87,7 +88,7 @@ def home():
 
                 current_state = get_current_fridge_entity()
                 
-                stateClass = "fridgeStateUnknown"
+                state_class = "fridgeStateUnknown"
 
                 if (current_state.state == 1):
                         state_class = "fridgeStateOpen"
@@ -100,10 +101,7 @@ def home():
                                             user_url = url)
 
         except Exception as e:
-                if (is_dev):
-                        return str(e)
-                else:
-                        return ":("
+            return process_exception(e)
 
 @bottle.route('/change_state')
 def change_state():
@@ -122,7 +120,7 @@ def change_state():
                 else:
                         return "Same Status"
         except Exception as e:
-                return str(e)
+               return process_exception(e)
 
 @bottle.route('/timeline_states')
 def get_serialized_timeline_states():
@@ -185,7 +183,8 @@ def broadcast_state(message):
                         headers={'Content-Type': 'application/x-www-form-urlencoded'})
                 return message
         except Exception as e:
-                return str(e)
+            return process_exception(e)
+
 
 #this all has to be in a transaction, otherwise the get state/set state can be inconsistent
 @ndb.transactional
@@ -226,15 +225,7 @@ def fridge_point_click():
                 else:
                         return json.dumps({ "error" : True, "errorMessage" : "Fridge is closed :(" })
         except Exception as e:
-                if users.is_current_user_admin():
-                        exc_type, exc_obj, exc_tb = sys.exc_info()
-                        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                        result = str(exc_type) + str(fname) + str(exc_tb.tb_lineno)                        
-                        error_message = "Unknown Error." + result + " " + str(e)
-                else:
-                        error_message = "Unknown Error."
-
-                return json.dumps({ "error" : True, "errorMessage" : error_message })
+               return process_exception(e)
 
 @ndb.transactional(xg=True)
 def increment_user_point(user, current_fridge_entity):
@@ -292,10 +283,7 @@ def set_user_name():
                 return { "error" : False
                         }
         except Exception as e:
-                if (is_dev):
-                        return str(e)
-                else:
-                        return ":("
+               return process_exception(e)
                 
 
 @bottle.route('/current_state')
@@ -312,10 +300,22 @@ def fridge_state(state):
         }
         return found_state
 
+def process_exception(e):
+    if users.is_current_user_admin():
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            result = str(exc_type) + str(fname) + str(exc_tb.tb_lineno)                        
+            error_message = "Unknown Error." + result + " " + str(e)
+    else:
+            error_message = "Unknown Error."
+
+    return json.dumps({ "error" : True, "errorMessage" : error_message })
+
 def get_current_fridge_entity():
         door_entity = FridgeDoorState.get_by_id(parent = door_ancestor_key, id = 'current')
         if (not door_entity):
                 door_entity = FridgeDoorState(parent = door_ancestor_key, id = 'current')
+                door_entity.state = 3 #unknown
                 door_entity.last_state = 3 #unknown
                 door_entity.change_time = datetime.datetime.now()
 
