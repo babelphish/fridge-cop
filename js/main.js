@@ -145,22 +145,41 @@ function attachEvents()
 	$("body").on("click", "#leaderboard tr.editable", function()
 	{
 		$(this).addClass("entry-mode");
+		$(this).find("input").focus();
 	});
 
 	$("body").on("click", ".save-username-button", function()
 	{
 		var row = $(this).parents("tr.entry-mode");
 		var newName = row.find(".name-entry input").val();
-		$.post("/set_name", 
-			  { "name" : newName })
-		.done(function(data) 
-		{ 
-			if (data.error == false)
-			{
-				row.find(".name-text").text(newName);
-				row.removeClass("entry-mode");
-			}
-		})
+		updateVisibleUsername(newName);
+	});
+	
+	$("body")
+	.on("keyup", "input.username-input", function(e)
+	{
+		var currentString = $(this).val();
+		var parent = $(this).parent();
+		
+		if (!currentString.match(visibleUserNamePattern))
+		{
+			parent.removeClass("has-success")
+			parent.addClass("has-error")
+		}
+		else
+		{			
+			parent.removeClass("has-error")
+			parent.addClass("has-success")
+		}
+	})
+	.on("keypress", "input.username-input", function(e)
+	{
+        if (e.keyCode == 13) 
+        {
+        	var newName = $(this).val();
+    		updateVisibleUsername(newName);        	
+        	return false;
+        }
 	});
 	
 	$(window).resize(function() 
@@ -184,6 +203,20 @@ function attachEvents()
 			at: "center right"
 		}
 	});
+}
+
+function updateVisibleUsername(newName)
+{
+	$.post("/set_name", 
+		  { "name" : newName })
+	.done(function(data) 
+	{ 
+		if (data.error == false)
+		{
+			row.find(".name-text").text(newName);
+			row.removeClass("entry-mode");
+		}
+	})	
 }
 
 function resizeTimeline()
@@ -256,13 +289,13 @@ function redrawLeaderboard()
 			var nameEntry =
 			'<div class="name-entry">' +
 				'<div class="input-group">' +
-					'<input type="text" class="form-control" placeholder="Enter your username">' +
+					'<input type="text" class="form-control username-input" placeholder="Enter your username" maxlength="' + maxVisibleUserNameLength + '">' +
 					'<span class="input-group-btn">' +
 						'<button class="btn btn-default save-username-button" type="button">Save!</button>' +
 					'</span>' +
 				'</div>' +
 			'</div>';
-			
+
 			if (rank.s)
 			{
 				name += nameEntry; //add the possibility to set a username

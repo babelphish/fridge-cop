@@ -29,10 +29,6 @@ door_ancestor_key = ndb.Key("FridgeDoor", "main")
 date_1970 = datetime.datetime.utcfromtimestamp(0)
 node_url = "http://node.fridge-cop.com/"
 node_dev_url = "http://localhost:8081/"
-visible_name_pattern = re.compile("^{0}{{{1},{2}}}$$".format(visible_name_validation_expression,
-                                                           min_visible_name_length,
-                                                           max_visible_name_length), re.UNICODE)
-
 config = ConfigParser.ConfigParser()
 config.read("secure_keys.ini")
 state_update_key = config.get("secure_keys", "state_update_key")
@@ -258,9 +254,13 @@ def set_user_name():
                         return { "error" : True,
                                  "errorMessage" : "'new_name' param must be set." }
 
-                if (len(new_name) > 30):
+                if (len(new_name) < min_visible_name_length):
                         return { "error" : True,
-                                 "errorMessage" : "Name can't be more than 30 characters." }
+                                 "errorMessage" : "Name can't be less than " + str(min_visible_name_length) + " characters." }
+
+                if (len(new_name) > max_visible_name_length):
+                        return { "error" : True,
+                                 "errorMessage" : "Name can't be more than " + str(max_visible_name_length) + " characters." }
                 
                 if (not visible_name_pattern.match(new_name)):
                         return { "error" : True,
