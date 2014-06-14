@@ -1,6 +1,12 @@
-import configparser
+import ConfigParser
 import subprocess
 import os, sys, inspect
+
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0,parentdir)
+
+from const_data import *
 from subprocess import check_output
 from copy import copy
 
@@ -11,11 +17,11 @@ if cmd_folder not in sys.path:
 import const_data
 
 def main():
-    config = configparser.ConfigParser()
+    config = ConfigParser.SafeConfigParser()
 
     config.read("build.ini")
-    build_number = int(config["version"]["build"])
-    config["version"]["build"] = str(build_number + 1)
+    build_number = int(config.get("version","build"))
+    config.set("version","build", str(build_number + 1))
 
     with open('build.ini', 'w') as configfile:
         config.write(configfile)
@@ -23,7 +29,13 @@ def main():
     f = open('..\generated_data.py', 'w')
     f.write("BUILD_NUMBER = " + str(build_number))
     f.close()
+    
+    f = open('..\js\generated_data.js', 'w')
+    f.write("var visibleUserNamePattern = /" + visible_name_validation_expression + "/;")
+    f.write("var maxVisibleUserNameLength = " + str(max_visible_name_length) + ";")
 
+    f.close()
+    
     minify_css()
     js_process = minify_js()
     js_process.wait()
