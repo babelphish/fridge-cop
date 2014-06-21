@@ -59,7 +59,6 @@ app.get("/dump", function(req, res)
 {
 	var output = "";
 	var lastTime = moment(JSON.parse(lastBroadcast).t, serverDateFormat);
-	output += lastTime.format();
 	var connectionTimes = [];
 	var messageTimes = [];
 	for (var i = 0; i < instances; i++)
