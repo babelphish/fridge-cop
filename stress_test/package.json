@@ -1,0 +1,19 @@
+{
+  "name": "fridge-stress-test",
+  "version": "0.1.0",
+  "description": "A server for blasting away at fridge-cop-node",
+  "repository" : { 
+	"type" : "git",
+	"url" : "https://github.com/babelphish/fridge-cop.git"
+  },
+  "dependencies": {
+	"socket.io-client": "1.0.4",
+	"restify" : "~2.8.1",
+	"yargs" : "~1.2.5",
+	"moment" : "~2.7.0",
+	"express" : "~4.4.4"
+  },
+  "scripts": {
+    "start": "node stress_test.js"
+  }
+}
