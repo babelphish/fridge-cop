@@ -5,26 +5,35 @@ var serverDateFormat = 'YYYY-MM-DD HH:mm:ss.SSS Z'
 eval(clientFileContents);
 
 var moment = require('moment')
+var argv = require('yargs')
+	.boolean('v')
+	.default('d', 'node.fridge-cop.com')
+	.alias('d', 'domain')
+	.default('i', 500)
+	.alias('i', 'instances')
+	.default('lp', 25)
+	.alias('lp', 'launchPeriod')
+	.argv;
 
 var results = {};
-var instances = 500;
-var devUpdateURL = 'http://localhost:8081/state_changes';
-//var devUpdateURL = 'http://node.fridge-cop.com/state_changes';
+var instances = argv.i;
+var url = 'http://' + argv.d + '/state_changes';
 
 var io = require("socket.io-client");
-var heartbeatMilliseconds = 5 * 1000;
+var heartbeatMilliseconds = argv.lp * 1000;
 var lastBroadcast = null;
 
 function instantiateNew(instance)
 {
 	results[instance] = {};
 	results[instance].startTryConnectTime = moment();
-	var socket = io.connect(devUpdateURL, {"forceNew" : true});
+	var socket = io.connect(url, {"forceNew" : true});
 
 	socket.on('connect', function()
 	{
 		results[instance].connectTime = moment();
-		console.log("Instance " + instance + " connected.")
+		if (argv.v)
+			console.log("Instance " + instance + " connected.")
 		socket.on('new_states', function (data)
 		{
 			if (instance == 1)
