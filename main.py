@@ -6,6 +6,7 @@ from google.appengine.ext import ndb
 from datetime import timedelta
 from minification_support import getScriptTags, getStyleTags
 from const_data import *
+from magnet import *
 import ConfigParser
 import logging
 import datetime
@@ -14,6 +15,7 @@ import uuid
 import sys, os
 import urllib
 import re
+import fridge_language
 from user_points import UserPoints
 from user_point import UserPoint
 from user_profile import UserProfile
@@ -32,6 +34,7 @@ node_dev_url = "http://localhost:8081/"
 config = ConfigParser.ConfigParser()
 config.read("secure_keys.ini")
 state_update_key = config.get("secure_keys", "state_update_key")
+user_language = "EN"
 
 is_dev = os.environ['SERVER_SOFTWARE'].startswith('Development')
 
@@ -284,7 +287,51 @@ def set_user_name():
                         }
         except Exception as e:
                return process_exception(e)
-                
+
+def generate_initial_magnets(user_id):
+        magnets = [];
+        lang = fridge_language.get_fridge_language(user_language)
+        for i in range(3):
+                temp_magnet = CharacterMagnet(
+                                owner = user_id,
+                                text = lang.get_random_letter()
+                        )
+                magnets.append(temp_magnet)
+        return magnets
+
+@bottle.route('/magnets/mine')
+def get_my_magnets():
+        try:
+                user = users.get_current_user()
+                requesting_user_id = str(user.user_id())
+                return get_magnet_inventory(requesting_user_id)
+        except Exception as e:
+               return process_exception(e)
+
+@bottle.route('/magnets/<user_id>')
+def get_user_magnets():
+        return get_magnets(user_id)
+
+@bottle.route('/magnets/add/<user_id>', method='POST')
+def add_user_magnet():
+        user = users.get_current_user()
+        if (user and users.is_current_user_admin()): #only admins can add magnets
+                magnet_type = request.forms.get('type')
+                magnet = MagnetFactory.get_magnet(magnet_type)
+                magnet.owner = user_id
+                magnet.text = request.forms.get('text')
+
+def get_magnets(user_id):
+        user_key = ndb.Key('UserPoints', user_id)
+        user_magnets = Magnet.query(filters = Magnet.owner == user_key).fetch()
+
+        if (magnet_inventory is None):
+                magnet_inventory = MagnetInventory(id=user_id, parent=user_key)
+                magnet_inventory.user_id = user_id
+                magnet_inventory.magnets = generate_initial_magnets()
+                magnet_inventory.put()
+
+        return json.dumps(magnet_inventory.to_dict())
 
 @bottle.route('/current_state')
 def get_serialized_current_state():
@@ -341,6 +388,10 @@ def js_init():
         return SimpleTemplate(name='init.js.tpl').render(logged_in = logged_in,
                                                          fridge_points = fridge_points,
                                                          serialized_state = serialized_state)
+
+@bottle.route('/magnettest')
+def magnets():
+        return SimpleTemplate(name='test_magnets.tpl').render()
 
 @bottle.route('/admin/test')
 def home():

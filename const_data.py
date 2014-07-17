@@ -1,9 +1,11 @@
 import re
 js_files = ["jquery-1.11.1.min.js",
+            "jquery-ui.min.js",
             "vex.combined.min.js",
             "state_client.js",
             "bootstrap.js",
             "main.js",
+            "magnets.js",
             "generated_data.js",
             "json2.min.js",
             "moment.min.js",
