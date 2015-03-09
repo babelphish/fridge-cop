@@ -21,11 +21,14 @@ function Magnet(config)
 
 Magnet.prototype.getLocation = function()
 {
-	return
+	var xValue = this.X();
+	var yValue = this.Y();
+	var result = 
 	{
-		'x' : this.X(),
-		'y' : this.Y()
+		x : xValue,
+		y : yValue
 	}
+	return result
 }
 
 Magnet.prototype.render = function()
@@ -43,8 +46,6 @@ Magnet.prototype.Y = function()
 {
 	return this.y;
 }
-
-
 
 Magnet.prototype.overlaps = function(magnet)
 {

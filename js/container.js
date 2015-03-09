@@ -26,17 +26,20 @@ Container.prototype.render = function()
 
 Container.prototype.configure = function(element, options)
 {
+	var that = this;
 	$.each(option.zones, function(index, zoneConfig)
 	{
 		that.zones.push(new Zone(zoneConfig))
-	));
+	});
 }
 
-Container.prototype.getZoneById = function(
-
-Container.prototype.addMagnet = function(magnet, zone)
+Container.prototype.getZoneById = function(id)
 {
-	var zoneToAddTo = if (!this.getZone(
+	return this.zones[id];
+}
+
+Container.prototype.addMagnet = function(magnet, zoneId)
+{
 	if (zone >= this.zones.length)
 	{
 		throw("Can't add a magnet to a zone that doesn't exist!");
@@ -52,7 +55,7 @@ function Zone(config)
 
 Zone.prototype.placedMagnets = function()
 {
-	return this.
+//	return this.
 }
 
 Zone.prototype.add = function(magnet)
@@ -63,6 +66,5 @@ Zone.prototype.add = function(magnet)
 
 Zone.prototype.firstOpenSpace = function()
 {
-	for(var i = 0; i < 
 
 }
